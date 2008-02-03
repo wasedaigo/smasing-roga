@@ -1,0 +1,9 @@
+:model_schemas:
+  - :name: Map
+    :columns: {}
+  - :name: Item
+    :columns:
+      - :name: Cost
+        :type: :integer
+  - :name: Skill
+    :columns:

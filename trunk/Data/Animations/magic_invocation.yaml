@@ -1,0 +1,120 @@
+--- 
+- sprites: 
+  - x: 0
+    y: 0
+    id: magic
+    src_x: 0
+    height: 64
+    src_y: 0
+    width: 64
+  effects: 
+  - se: ok
+  duration: 1
+- sprites: 
+  - x: 0
+    y: 0
+    id: magic
+    src_x: 64
+    height: 64
+    src_y: 0
+    width: 64
+  duration: 1
+- sprites: 
+  - x: 0
+    y: 0
+    id: magic
+    src_x: 128
+    height: 64
+    src_y: 0
+    width: 64
+  duration: 1
+- sprites: 
+  - x: 0
+    y: 0
+    id: magic
+    src_x: 192
+    height: 64
+    src_y: 0
+    width: 64
+  duration: 1
+- sprites: 
+  - x: 0
+    y: 0
+    id: magic
+    src_x: 64
+    height: 64
+    src_y: 64
+    width: 64
+  duration: 1
+- sprites: 
+  - x: 0
+    y: 0
+    id: magic
+    src_x: 128
+    height: 64
+    src_y: 64
+    width: 64
+  duration: 1
+- sprites: 
+  - x: 0
+    y: 0
+    id: magic
+    src_x: 192
+    height: 64
+    src_y: 64
+    width: 64
+  duration: 1
+- sprites: 
+  - x: 0
+    y: 0
+    id: magic
+    src_x: 64
+    height: 64
+    src_y: 128
+    width: 64
+  duration: 1
+- sprites: 
+  - x: 0
+    y: 0
+    id: magic
+    src_x: 128
+    height: 64
+    src_y: 128
+    width: 64
+  duration: 1
+- sprites: 
+  - x: 0
+    y: 0
+    id: magic
+    src_x: 192
+    height: 64
+    src_y: 128
+    width: 64
+  duration: 1
+- sprites: 
+  - x: 0
+    y: 0
+    id: magic
+    src_x: 64
+    height: 64
+    src_y: 192
+    width: 64
+  duration: 1
+- sprites: 
+  - x: 0
+    y: 0
+    id: magic
+    src_x: 128
+    height: 64
+    src_y: 192
+    width: 64
+  duration: 1
+- sprites: 
+  - x: 0
+    y: 0
+    id: magic
+    src_x: 192
+    height: 64
+    src_y: 192
+    width: 64
+  duration: 1

@@ -1,0 +1,37 @@
+--- 
+- sprites: 
+  - x: 0
+    y: 0
+    id: battlers/default
+    src_x: 480
+    height: 32
+    src_y: 0
+    width: 32
+  duration: 2
+- sprites: 
+  - x: 0
+    y: 0
+    id: battlers/default
+    src_x: 512
+    height: 32
+    src_y: 0
+    width: 32
+  duration: 2
+- sprites: 
+  - x: 0
+    y: 0
+    id: battlers/default
+    src_x: 544
+    height: 32
+    src_y: 0
+    width: 32
+  duration: 2
+- sprites: 
+  - x: 0
+    y: 0
+    id: battlers/default
+    src_x: 512
+    height: 32
+    src_y: 0
+    width: 32
+  duration: 2
