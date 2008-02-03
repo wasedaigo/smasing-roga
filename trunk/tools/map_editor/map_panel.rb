@@ -125,11 +125,13 @@ module DRPGTool
     end
 
     def on_size_changed(e)
+      paint{|dc|dc.clear}
       self.set_scrollbars(Config::GRID_SIZE * @zoom, Config::GRID_SIZE * @zoom, @tile_w_count, @tile_h_count, 0, 0, true)
       self.refresh
     end
     
     def on_paint(dc)
+      
       self.update_panel
       tx, ty = self.calc_scrolled_position(0, 0)
       do_prepare_dc(dc)
