@@ -1,0 +1,10 @@
+--- 
+name: Fire Breath
+options: 
+  :effect_value: -9
+type: attack
+target: 
+  args: 
+  - 2
+  - 2
+  type: RectangleTileTarget

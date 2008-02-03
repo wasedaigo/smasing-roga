@@ -1,0 +1,10 @@
+--- 
+name: Smash
+options: 
+  :effect_value: -26
+  :push_back: 1
+type: attack
+target: 
+  args: 
+  - 1
+  type: BattlerTarget

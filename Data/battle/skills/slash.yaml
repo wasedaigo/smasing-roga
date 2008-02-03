@@ -1,0 +1,11 @@
+--- 
+name: Slash
+options: 
+  :effect_value: -16
+  :chain_frame: 16
+  :chain_time: 10
+type: attack
+target: 
+  args: 
+  - 1
+  type: EnemyTarget
