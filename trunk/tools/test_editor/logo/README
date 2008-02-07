@@ -1,0 +1,49 @@
+Logo for Ruby/GtkGLExt
+======================
+                                                                               
+This is a sample for Ruby/GtkGLExt. 
+The orginal C program is distributed with GtkGLExt.
+
+Requirements
+------------
+* ruby 1.8.1 
+* Ruby-GNOME2-0.8.1
+  (Ruby/GLib, Ruby/GdkPixbuf, Ruby/Pango, Ruby/GTK, Ruby/GtkGLExt)
+* GtkGLExt 1.0.5 (http://gtkglext.sourceforge.net/)
+* OpenGL Interface for ruby 0.32c (http://www2.giganet.net/~yoshi/)
+
+How to play
+-----------
+$ruby main.rb [--count num] [--no-anim] [--help]
+
+  --count num: Number of the rotation count. Default value is 100.
+  --no-anim:   Stop animation.
+  --help:      Show usage.
+
+* Mouse operation
+  Drag the logo with Button1 of your mouse - Rotate the logo.
+  Drag the logo with Button2 of your mouse - Move the logo.
+  Click Button3 of your mouse              - Show menus.
+
+* Keyboard operation
+  a - Stop/Start animation.
+  i - Initialize the logo.
+  Escape - Quit this program.
+
+Website
+-------
+http://ruby-gnome2.sourceforge.jp/
+                                                                               
+License
+-------
+Copyright (c) 2004 Masao Mutoh
+                                                                               
+You can redistribute it and/or modify it under the terms of
+the GPL except trackball.rb.
+
+trackball.rb: See the head part of trackball.rb. 
+Original trackball.c: (c) Copyright 1993, 1994, Silicon Graphics, Inc.
+
+Original C version was written by Naofumi Yasufuku
+which is licensed under the terms of the GPL.
+  Website: http://gtkglext.sourceforge.net/
