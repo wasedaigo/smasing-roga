@@ -63,7 +63,7 @@ class MapLayer
       return
     end
 
-    @texture.fill_rect(sx, sy, tw - 1, th - 1, Color.new(0,0,0,0))
+    @texture.fill_rect(sx, sy, tw, th, Color.new(0,0,0,0))
   end
   
   def render_new_part(rx, ry, sx, sy, w, h)
