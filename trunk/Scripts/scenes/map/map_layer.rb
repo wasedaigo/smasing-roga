@@ -41,12 +41,29 @@ class MapLayer
       ty = sy
       sy = 0
     end
-
-    if sx + w >= @map_data.width || sy + h >= @map_data.height
+    
+    if sx + w >= @map_data.width || sy + h >= @map_data.height || w + tx <= 0 || h + ty <= 0
       return
     end
     
-    @texture.fill_rect(sx * Config::GRID_SIZE, sy * Config::GRID_SIZE, (w + tx) * Config::GRID_SIZE, (h + ty) * Config::GRID_SIZE, Color.new(0,0,0,0))
+    tw = (w + tx) * Config::GRID_SIZE
+    th = (h + ty) * Config::GRID_SIZE
+    sx = sx * Config::GRID_SIZE
+    sy = sy * Config::GRID_SIZE
+    
+    if sx + tw > @texture.width
+      tw = @texture.width - sx
+    end
+
+    if sy + th > @texture.height
+      th = @texture.height - sy
+    end
+    
+    if tw <= 0 || th <= 0
+      return
+    end
+
+    @texture.fill_rect(sx, sy, tw - 1, th - 1, Color.new(0,0,0,0))
   end
   
   def render_new_part(rx, ry, sx, sy, w, h)
