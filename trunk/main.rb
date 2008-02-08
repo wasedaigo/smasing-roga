@@ -18,7 +18,7 @@ require  "scenes/map_scene"
 Game.title = "Test Game"
 Game.fps = 60
 scene_stack = SceneStack.new(TitleScene.new)
-scene_stack.push(BattleScene.new)
+#scene_stack.push(BattleScene.new)
 FONT = Font.new("MS UI Gothic", 12)
 
 #Audio.play_bgm("Data/Audio/Music/battle2", :loop=>true)
