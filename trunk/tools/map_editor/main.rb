@@ -1,10 +1,9 @@
-require "wx"
-require "starruby"
+require 'wx'
+require 'starruby'
 include StarRuby
 
-
-require "yaml"
-require "yaml/store"
+require 'yaml'
+require 'yaml/store'
 
 module StarRuby
   class Texture

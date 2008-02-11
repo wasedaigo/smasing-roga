@@ -36,17 +36,15 @@ module DRPGTool
       @mode = :put
       @palets = palets
       @using_palet_no = 0
-      
+
       @map =  Map.new(@tile_w_count, @tile_h_count, @tile_w_count, @tile_h_count, data[:collisionData], 0  => TestMapChipset, 1  => TestMapChipset2)
-      
-      
+
       @layers = [MapLayer.new(@map, data[:bottomLayer]), MapLayer.new(@map, data[:topLayer])]
       @current_layer_no = 0
       @zoom = 1
       @frame_zoom = 1
       @texture = Texture.new(@map_width, @map_height)
 
-      
       #self.update_panel
       self.refresh
       evt_paint do |e|
