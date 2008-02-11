@@ -1,38 +1,40 @@
 require  "scenes/map/collision_type"
-module MapLoader
 
-  def self.loadMap
+  module SRoga
+  module MapLoader
 
-    # load map chip counts(width & height)
-    wCount = 50
-    hCount = 60
-    
-    # load bottom layer
-    t = Array.new(wCount * hCount)
-    t.each_with_index do |obj, i|
+    def self.loadMap
 
-      #v = 1 if rand(4) == 0
-      t[i] = ChipData.generate(0, 0)
+      # load map chip counts(width & height)
+      wCount = 50
+      hCount = 60
+      
+      # load bottom layer
+      t = Array.new(wCount * hCount)
+      t.each_with_index do |obj, i|
+
+        #v = 1 if rand(4) == 0
+        t[i] = ChipData.generate(0, 0)
+      end
+      bottomLayer = Table.new(wCount, t)
+
+      # load top layer
+      t = Array.new(wCount * hCount)
+      t.each_with_index do |obj, i|
+        t[i] = ChipData.generate(1, 0)
+      end
+      topLayer = Table.new(wCount, t)
+
+      # load collision data
+      t = Array.new(wCount * hCount)
+      bottomLayer.each_with_index do |obj, i|
+        t[i] = CollisionType::NONE
+        t[i] = CollisionType::ALL if ChipData.equal?(obj, 0, 1)
+      end
+      collisionData = Table.new(wCount, t)
+
+      # return results
+      {:wCount=>wCount, :hCount=>hCount, :topLayer=>topLayer, :bottomLayer=>bottomLayer, :collisionData=>collisionData}
     end
-    bottomLayer = Table.new(wCount, t)
-
-    # load top layer
-    t = Array.new(wCount * hCount)
-    t.each_with_index do |obj, i|
-      t[i] = ChipData.generate(1, 0)
-    end
-    topLayer = Table.new(wCount, t)
-
-    # load collision data
-    t = Array.new(wCount * hCount)
-    bottomLayer.each_with_index do |obj, i|
-      t[i] = CollisionType::NONE
-      t[i] = CollisionType::ALL if ChipData.equal?(obj, 0, 1)
-    end
-    collisionData = Table.new(wCount, t)
-
-    # return results
-    {:wCount=>wCount, :hCount=>hCount, :topLayer=>topLayer, :bottomLayer=>bottomLayer, :collisionData=>collisionData}
   end
-
 end

@@ -14,12 +14,12 @@ require  "d_input"
 
 require "scenes/transitionable"
 include Transitionable
+include SRoga
 
 class MapScene
-  include Config
 
   # Define ChipSets
-  TestPlayerChipSet = CharacterChipset.new "test", 16, 16, 3, Rectangle.new(0, 0, 16, 16)
+  TestPlayerChipSet = SRoga::CharacterChipset.new "test", 16, 16, 3, Rectangle.new(0, 0, 16, 16)
   SaruChipset = CharacterChipset.new "saru", 32, 32, 3, Rectangle.new(8, 16, 16, 16)
   PlayerChipset = CharacterChipset.new "player", 24, 32, 3, Rectangle.new(4, 16, 16, 16)
 
@@ -74,8 +74,8 @@ class MapScene
 
   # Caliculate the base render position(Top-Left)
   def caliculateBase x, y
-    tx = x - GRID_SIZE * (((@showWidth)/2)/GRID_SIZE)
-    ty = y - GRID_SIZE * (((@showHeight)/2)/GRID_SIZE)
+    tx = x - SRoga::Config::GRID_SIZE * ((( @showWidth)/2 ) / SRoga::Config::GRID_SIZE)
+    ty = y - SRoga::Config::GRID_SIZE * ((( @showHeight)/2 ) / SRoga::Config::GRID_SIZE)
 
     if tx < 0
       tx = 0
