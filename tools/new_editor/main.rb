@@ -1,6 +1,14 @@
 require 'gtk2'
 require 'gnomecanvas2'
 require 'starruby'
+
+$LOAD_PATH << "../../Scripts/"
+require 'resource_manager'
+$res = ResourceManager.new("Data/anime_file.csv")
+$data_path = "../../"
+SCREEN_WIDTH = 320
+SCREEN_HEIGHT = 240
+
 require 'main_map_panel'
 window = Gtk::Window.new
 window.title = "Hello Buttons"
@@ -12,7 +20,6 @@ end
 
 def create_menubar
   menubar = Gtk::MenuBar.new
-  
 
   menuitem = Gtk::MenuItem.new("File")
   menubar.append(menuitem)

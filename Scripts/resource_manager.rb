@@ -1,5 +1,7 @@
 require  "lib/graphics/animation_loader"
 require "scenes/battle/skills/skill_loader"
+
+include StarRuby
 class ResourceManager
   def initialize(animeFileNames)
     @textures = {}

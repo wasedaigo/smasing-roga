@@ -1,27 +1,28 @@
 require 'main_map_panel/map_panel'
 require 'scroll_box'
+require 'main_map_panel/tile_panel'
+
 class MainMapPanel < Gtk::VBox
   def initialize
     super(false, 0)
-    
+
     self.pack_start(create_toolbar, true, true, 0)
 
     tex = StarRuby::Texture.load("test.png")
     pixbuf = Gdk::Pixbuf.new(tex.dump('rgb'), Gdk::Pixbuf::ColorSpace.new(Gdk::Pixbuf::ColorSpace::RGB), false, 8, tex.width, tex.height, tex.width * 3)
 
-    t = Gtk::VBox.new(false, 0)
-    t.add(Gtk::Image.new(pixbuf))
-    t.add(Gtk::Image.new(pixbuf))
-    
     h_box = Gtk::HBox.new
-    h_box.add(t)
+    tile_box = TilePanel.new
+    tile_box.set_size_request(200, 200)
+
+    h_box.add(tile_box)
     h_box.add(ScrollBox.new(MapPanel.new))
-    
+
     t = Gtk::VBox.new(false, 10)
     t.add(h_box)
     self.pack_start(t, true, true, 0)
   end
-  
+
   def create_toolbar
     toolbar = Gtk::Toolbar.new
     toolbar.append("Horizontal", "Horizontal toolbar layout",
