@@ -23,8 +23,12 @@ module Editor
 
         @texture = StarRuby::Texture.new(@map.width, @map.height)
         @zoom = 1
+        @image = Gtk::Image.new
+        @image.set_alignment(0, 0)
 
         self.render
+
+
       end
 
       def update_panel
@@ -47,10 +51,17 @@ module Editor
 
       def render
         update_panel
-        pixbuf = Gdk::Pixbuf.new(@dst_texture.dump('rgb'), Gdk::Pixbuf::ColorSpace.new(Gdk::Pixbuf::ColorSpace::RGB), false, 8, @texture.width, @texture.height, @texture.width * 3)
-        
-        t = Gtk::Image.new(pixbuf)
-        t.set_alignment(0, 0)
+        @image.pixbuf = Gdk::Pixbuf.new(@dst_texture.dump('rgb'), Gdk::Pixbuf::ColorSpace.new(Gdk::Pixbuf::ColorSpace::RGB), false, 8, @dst_texture.width, @dst_texture.height, @dst_texture.width * 3)
+
+        #はまった・・・
+        t = Gtk::EventBox.new
+        t.add_events(Gdk::Event::POINTER_MOTION_MASK)
+        t.signal_connect("event") do |item, event|
+        t.can_focus = true
+        t.has_focus = true
+          p event.event_type
+        end
+        t.add(@image)
         self.add_with_viewport(t)
       end
     end

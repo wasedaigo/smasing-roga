@@ -81,7 +81,7 @@ module DRPGTool
     def on_size_changed(e)
       w = @texture.width
       h = @texture.height
-      self.set_scrollbars(Config::GRID_SIZE * @zoom - 16, Config::GRID_SIZE * @zoom, w / (Config::GRID_SIZE * @zoom), h / (Config::GRID_SIZE * @zoom), 0, 0, true)
+      self.set_scrollbars(SRoga::Config::GRID_SIZE * @zoom - 16, SRoga::Config::GRID_SIZE * @zoom, w / (SRoga::Config::GRID_SIZE * @zoom), h / (SRoga::Config::GRID_SIZE * @zoom), 0, 0, true)
     end
     
     def on_paint(dc)
@@ -91,8 +91,8 @@ module DRPGTool
     
     def on_left_down(e)
       tx1, ty1 = self.calc_scrolled_position(0, 0)
-      tx2 = ((e.get_x - tx1) / (Config::GRID_SIZE.to_f * @zoom)).floor
-      ty2 = ((e.get_y - ty1) / (Config::GRID_SIZE.to_f * @zoom)).floor
+      tx2 = ((e.get_x - tx1) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
+      ty2 = ((e.get_y - ty1) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
       self.select(tx2, ty2)
     end
     
@@ -101,11 +101,11 @@ module DRPGTool
   	end
     
     def select_chip_by_id(id)
-      tx1 = (id % PALET_ROW_COUNT) * Config::GRID_SIZE * 2
-      ty1 = (id / PALET_ROW_COUNT) * Config::GRID_SIZE * 2
+      tx1 = (id % PALET_ROW_COUNT) * SRoga::Config::GRID_SIZE * 2
+      ty1 = (id / PALET_ROW_COUNT) * SRoga::Config::GRID_SIZE * 2
 
-      tx2 = (tx1 / (Config::GRID_SIZE.to_f * @zoom)).floor
-      ty2 = (ty1 / (Config::GRID_SIZE.to_f * @zoom)).floor
+      tx2 = (tx1 / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
+      ty2 = (ty1 / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
       self.select(tx2, ty2)
     end
     
