@@ -30,8 +30,8 @@ module DRPGTool
       data = MapLoader.loadMap
       @tile_w_count = data[:wCount]
       @tile_h_count = data[:hCount]
-      @map_width = @tile_w_count * Config::GRID_SIZE
-      @map_height = @tile_h_count * Config::GRID_SIZE
+      @map_width = @tile_w_count * SRoga::Config::GRID_SIZE
+      @map_height = @tile_h_count * SRoga::Config::GRID_SIZE
       
       @mode = :put
       @palets = palets
@@ -90,14 +90,14 @@ module DRPGTool
 
     def zoom_in
       @zoom = [4, @zoom + 1].min
-      self.set_scrollbars(Config::GRID_SIZE * @zoom, Config::GRID_SIZE * @zoom, @tile_w_count, @tile_h_count, 0, 0, true)
+      self.set_scrollbars(SRoga::Config::GRID_SIZE * @zoom, SRoga::Config::GRID_SIZE * @zoom, @tile_w_count, @tile_h_count, 0, 0, true)
       #self.update_panel
       self.refresh
     end
     
     def zoom_out
       @zoom = [1, @zoom - 1].max
-      self.set_scrollbars(Config::GRID_SIZE * @zoom, Config::GRID_SIZE * @zoom, @tile_w_count, @tile_h_count, 0, 0, true)
+      self.set_scrollbars(SRoga::Config::GRID_SIZE * @zoom, SRoga::Config::GRID_SIZE * @zoom, @tile_w_count, @tile_h_count, 0, 0, true)
       #self.update_panel
       self.refresh
     end
@@ -124,7 +124,7 @@ module DRPGTool
 
     def on_size_changed(e)
       paint{|dc|dc.clear}
-      self.set_scrollbars(Config::GRID_SIZE * @zoom, Config::GRID_SIZE * @zoom, @tile_w_count, @tile_h_count, 0, 0, true)
+      self.set_scrollbars(SRoga::Config::GRID_SIZE * @zoom, SRoga::Config::GRID_SIZE * @zoom, @tile_w_count, @tile_h_count, 0, 0, true)
       self.refresh
     end
     
@@ -138,8 +138,8 @@ module DRPGTool
 
     def on_left_down(e)
       tx, ty = self.calc_scrolled_position(0, 0)
-      sx = ((e.get_x - tx) / (Config::GRID_SIZE.to_f * @zoom)).floor
-      sy = ((e.get_y - ty) / (Config::GRID_SIZE.to_f * @zoom)).floor
+      sx = ((e.get_x - tx) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
+      sy = ((e.get_y - ty) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
       @draw_sx = sx
       @draw_sy = sy
       self.put_tile(sx, sy)
@@ -150,15 +150,15 @@ module DRPGTool
       if e.dragging
         if e.left_is_down
           tx, ty = self.calc_scrolled_position(0, 0)
-          sx = ((e.get_x - tx) / (Config::GRID_SIZE.to_f * @zoom)).floor
-          sy = ((e.get_y - ty) / (Config::GRID_SIZE.to_f * @zoom)).floor
+          sx = ((e.get_x - tx) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
+          sy = ((e.get_y - ty) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
           self.put_tile(sx, sy)
         end
         if e.right_is_down
           @mode = :select
           tx, ty = self.calc_scrolled_position(0, 0)
-          @ex = ((e.get_x - tx) / (Config::GRID_SIZE.to_f * @zoom)).floor
-          @ey = ((e.get_y - ty) / (Config::GRID_SIZE.to_f * @zoom)).floor
+          @ex = ((e.get_x - tx) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
+          @ey = ((e.get_y - ty) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
         end
       end
 
@@ -172,8 +172,8 @@ module DRPGTool
     
     def set_default_frame(x, y)
       tx, ty = self.calc_scrolled_position(0, 0)
-      @sx = ((x - tx) / (Config::GRID_SIZE.to_f * @zoom)).floor
-      @sy = ((y - ty) / (Config::GRID_SIZE.to_f * @zoom)).floor
+      @sx = ((x - tx) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
+      @sy = ((y - ty) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
 
       if self.palet.active?
         @ex = @sx + self.palet.frame_w - 1
@@ -186,8 +186,8 @@ module DRPGTool
 
     def on_right_down(e)
       tx1, ty1 = self.calc_scrolled_position(0, 0)
-      tx2 = ((e.get_x - tx1) / (Config::GRID_SIZE.to_f * @zoom)).floor
-      ty2 = ((e.get_y - ty1) / (Config::GRID_SIZE.to_f * @zoom)).floor
+      tx2 = ((e.get_x - tx1) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
+      ty2 = ((e.get_y - ty1) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
       
       self.select(tx2, ty2)
       self.set_default_frame(e.get_x, e.get_y)

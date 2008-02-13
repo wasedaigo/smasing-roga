@@ -11,8 +11,8 @@ module Frame
       unless @frame_w == self.frame_w && @frame_h == self.frame_h
         @frame_w = self.frame_w
         @frame_h = self.frame_h
-        tw = self.frame_w * SRoga::Config::GRID_SIZE
-        th = self.frame_h * SRoga::Config::GRID_SIZE
+        tw = self.frame_w * Config::GRID_SIZE
+        th = self.frame_h * Config::GRID_SIZE
 
         @select_frame = Texture.new(tw, th)
         @select_frame.fill_rect(0, 0, tw, th, Color.new(0, 0, 0, 255))
@@ -24,6 +24,6 @@ module Frame
     end
     
     def render_frame(s, dx = 0, dy = 0)
-      s.render_texture(self.select_frame, [@sx, @ex].min * SRoga::Config::GRID_SIZE * @frame_zoom - dx, [@sy, @ey].min * SRoga::Config::GRID_SIZE * @frame_zoom - dy, :alpha => 150, :scale_x => @frame_zoom, :scale_y => @frame_zoom)
+      s.render_texture(self.select_frame, [@sx, @ex].min * Config::GRID_SIZE * @frame_zoom - dx, [@sy, @ey].min * Config::GRID_SIZE * @frame_zoom - dy, :alpha => 150, :scale_x => @frame_zoom, :scale_y => @frame_zoom)
     end
 end

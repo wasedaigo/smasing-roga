@@ -12,8 +12,8 @@ module Editor
         t2.set_height_request(1)
         t.attach(t2, 0, 1, 0, 1, 0, Gtk::EXPAND | Gtk::FILL, 0)
         t.attach(Editor::Map::Mappanel.new, 1, 2, 0, 1, Gtk::EXPAND | Gtk::FILL, Gtk::EXPAND | Gtk::FILL)
-        
         self.add(t)
+
       end
     end
   end
