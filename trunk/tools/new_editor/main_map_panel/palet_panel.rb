@@ -5,7 +5,7 @@ require "scenes/map/chip_data"
 PALET_ROW_COUNT = 6
 module Editor
   module Map
-    class TilePanel < Gtk::ScrolledWindow
+    class PaletPanel < Gtk::ScrolledWindow
       include Frame
       attr_reader :chip_id
       attr_accessor :zoom
@@ -18,28 +18,48 @@ module Editor
         @image = Gtk::Image.new
         @image.set_alignment(0, 0)
 
-        
-        self.add_with_viewport(@image)
         self.set_height_request(h)
         
-        self.signal_connect("event") do |item, event|
-          p event.event_type
-        end
         @sx = 0
         @sy = 0
         @ex = 0
         @ey = 0
         @zoom = 2
-        @frame_zoom = 1
+        @frame_zoom = 2
 
         @chip_id = 0
         @chipset_no = 0
-        @active = false
+        @active = true
 
         @frame_w = 0
         @frame_h = 0
         
-        self.update
+        self.set_panel
+        self.render
+      end
+      
+      def set_panel
+        t = Gtk::EventBox.new
+        t.add_events(Gdk::Event::POINTER_MOTION_MASK)
+        t.add(@image)
+        self.add_with_viewport(t)
+        self.set_signals(t)
+      end
+      
+      def set_signals(target)
+        target.signal_connect("event") do |item, event|
+          case(event.event_type)
+            when(Gdk::Event::BUTTON_PRESS)
+              case(event.button)
+                when 1
+                  self.on_left_down(event)
+                when 3
+                  self.on_right_down(event)
+              end
+            when(Gdk::Event::DRAG_MOTION)
+              self.on_drag_motion(event)
+          end
+        end
       end
       
       #Property
@@ -59,7 +79,7 @@ module Editor
         @ex = @sx
         @ey = @sy
         
-        self.refresh
+        self.render
       end
       
       def select_chip_by_id(id)
@@ -71,35 +91,43 @@ module Editor
         self.select(tx2, ty2)
       end
     
-      def update
+      def render
         @dst_texture = Texture.new(@texture.width * @zoom , @texture.height * @zoom)
         @dst_texture.render_texture(@texture, 0, 0, :scale_x => @zoom, :scale_y => @zoom)
+        self.render_frame(@dst_texture) if @active
         @image.pixbuf = Gdk::Pixbuf.new(@dst_texture.dump('rgb'), Gdk::Pixbuf::ColorSpace.new(Gdk::Pixbuf::ColorSpace::RGB), false, 8, @dst_texture.width, @dst_texture.height, @dst_texture.width * 3)
       end
       
       # Events
-      def on_paint(dc)
-        do_prepare_dc(dc)
-        dc.draw_texture(@dst_texture, 0, 0)
-      end
-      
       def on_left_down(e)
-        tx1, ty1 = self.calc_scrolled_position(0, 0)
-        tx2 = ((e.get_x - tx1) / (Config::GRID_SIZE.to_f * @zoom)).floor
-        ty2 = ((e.get_y - ty1) / (Config::GRID_SIZE.to_f * @zoom)).floor
+        tx1 = self.hadjustment.value
+        ty1 = self.vadjustment.value
+        tx2 = ((e.x - tx1) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
+        ty2 = ((e.y - ty1) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
         self.select(tx2, ty2)
       end
       
+      def on_drag_motion(e)
+      
+      end
 
+      def on_right_down(e)
+        tx1 = self.hadjustment.value
+        ty1 = self.vadjustment.value
+        tx2 = ((e.x - tx1) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
+        ty2 = ((e.y - ty1) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
+        self.select(tx2, ty2)
+      end
+      
       #Iterator
       def each_chip_info
         (0 .. (@sx - @ex).abs).each do |x|
           (0 .. (@sy - @ey).abs).each do |y|
-            yield ChipData.generate(@chipset_no, ([@sy, @ey].min + y) * PALET_ROW_COUNT + ([@sx, @ex].min + x)), x, y
+            yield SRoga::ChipData.generate(@chipset_no, ([@sy, @ey].min + y) * PALET_ROW_COUNT + ([@sx, @ex].min + x)), x, y
           end
         end
       end
-    
+
     end
   end
 end

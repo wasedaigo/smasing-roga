@@ -16,7 +16,7 @@ require  "scenes/battle_scene"
 require  "scenes/map_scene"
 
 Game.title = "Test Game"
-Game.fps = 60
+Game.fps = 6000
 scene_stack = SceneStack.new(TitleScene.new)
 #scene_stack.push(BattleScene.new)
 FONT = Font.new("MS UI Gothic", 12)
@@ -27,7 +27,7 @@ def print_screen_text(str, x = 0, y = 0)
   Game.screen.render_text(str, x, y, FONT, Color.new(255, 255, 255))
 end
 
-Game.run(SCREEN_WIDTH, SCREEN_HEIGHT, :window_scale => 3) do
+Game.run(SCREEN_WIDTH, SCREEN_HEIGHT, :window_scale => 2) do
   current_scene = scene_stack.current
   if current_scene
     current_scene.update(scene_stack)
