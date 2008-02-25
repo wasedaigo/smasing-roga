@@ -11,9 +11,16 @@ module SRoga
     def initialize(map, map_data)
       @map = map
       @map_data = map_data
-      @texture = Texture.new((@map.show_w_count + EX_GRID) * Config::GRID_SIZE, (@map.show_h_count + EX_GRID) * Config::GRID_SIZE)
+  
+      self.refresh_texture
     end
 
+    def refresh_texture
+      t = Texture.new((@map.show_w_count + EX_GRID) * Config::GRID_SIZE, (@map.show_h_count + EX_GRID) * Config::GRID_SIZE)
+      t.render_texture(@texture, 0, 0) unless @texture.nil?
+      @texture = t
+    end
+    
     def width
       Config::GRID_SIZE * @map_data.width
     end
@@ -123,7 +130,6 @@ module SRoga
     end
 
     def render(s, dx, dy)
-      #p "#{s.width}: #{dx}"
       s.render_texture(@texture, 0, 0, :src_x => dx, :src_y => dy, :src_width => @texture.width - dx, :src_height => @texture.height - dy)
     end
   end

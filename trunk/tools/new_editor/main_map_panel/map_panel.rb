@@ -4,61 +4,103 @@ require 'scenes/map/map_chipset'
 require 'scenes/map/auto_map_chipset'
 require 'scenes/map/map_loader'
 require 'scenes/map/config'
+require 'gadgets/scroll_box'
 
 module Editor
   module Map
-    class Mappanel  < Gtk::ScrolledWindow
-      TestMapChipset = SRoga::AutoMapChipset.new("ChipSet2", 16)
-      TestMapChipset2 = SRoga::MapChipset.new("ChipSet", 16)
+    class Mappanel  < Gtk::VBox
 
       def initialize(palets)
         super()
-        self.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC)
+
+        # self.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC)
         data = SRoga::MapLoader.loadMap
         @tile_w_count = data[:wCount]
         @tile_h_count = data[:hCount]
-        @map_width = @tile_w_count * SRoga::Config::GRID_SIZE
-        @map_height = @tile_h_count * SRoga::Config::GRID_SIZE
-        @map = SRoga::Map.new(@tile_w_count, @tile_h_count, @tile_w_count, @tile_h_count, data[:collisionData], 0  => TestMapChipset, 1  => TestMapChipset2)
-        @layers = [SRoga::MapLayer.new(@map, data[:bottomLayer]), SRoga::MapLayer.new(@map, data[:topLayer])]
-        @texture = StarRuby::Texture.new(@map.width, @map.height)
-        @zoom = 1
-        @image = Gtk::Image.new
-        @image.set_alignment(0, 0)
+       
+        @scroll_box = Editor::ScrollBox.new(@tile_w_count * SRoga::Config::GRID_SIZE, @tile_h_count * SRoga::Config::GRID_SIZE, 640, 640)
+        
+        chipsets = {}
+        palets.each_with_index do |palet, i|
+          chipsets[i] = palet.chipset
+        end
+
         @memory = nil
         @palets = palets
         @using_palet_no = 0
         @current_layer_no = 0
         
+        @left_pressed = false
+        @right_pressed = false
+        @p_sx = -1
+        @p_sy = -1
+        
+        @zoom = 2
+
+        @map = SRoga::Map.new(@tile_w_count, @tile_h_count, 40, 40, data[:collisionData], chipsets)
+        @layers = [SRoga::MapLayer.new(@map, data[:bottomLayer]), SRoga::MapLayer.new(@map, data[:topLayer])]
+        @texture = StarRuby::Texture.new(@map.width, @map.height)
+        
+        
+        # self.set_panel
         self.set_panel
+        self.set_signals
         self.render
+        
+        # self.set_map_size(@tile_w_count, @tile_h_count)
+        # self.render
       end
       
       def set_panel
-        t = Gtk::EventBox.new
-        t.add_events(Gdk::Event::POINTER_MOTION_MASK)
-        t.add(@image)
-        self.add_with_viewport(t)
-        self.set_signals(t)
+        self.add(@scroll_box)
       end
       
-      def set_signals(target)
-        target.signal_connect("event") do |item, event|
-          case(event.event_type)
-            when(Gdk::Event::BUTTON_PRESS)
-              case(event.button)
-                when 1
-                  self.on_left_down(event)
-                when 3
-                  self.on_right_down(event)
-              end
-            when(Gdk::Event::DRAG_MOTION)
-              self.on_drag_motion(event)
+      def set_signals
+      
+        @scroll_box.signal_connect("motion-notify-event") do |item, event|
+          self.on_motion(event)
+        end
+        
+        @scroll_box.signal_connect("button-press-event") do |item, event|
+          case(event.button)
+            when 1
+              self.on_left_down(event)
+            when 3
+              self.on_right_down(event)
           end
+        end
+
+        @scroll_box.signal_connect("button-release-event") do |item, event|
+          case(event.button)
+            when 1
+              self.on_left_up(event)
+            when 3
+              self.on_right_up(event)
+          end
+        end
+ 
+        
+        
+        $window.signal_connect("configure-event") do |item, event|
+          self.on_resize(event)
+        end
+        
+        @scroll_box.h_scrollbar.adjustment.signal_connect("value-changed") do |item, event|
+          self.render
+        end
+
+        @scroll_box.v_scrollbar.adjustment.signal_connect("value-changed") do |item, event|
+          self.render
         end
       end
 
       # Property
+      def client_size
+        self.width
+        self.height
+        return w, h
+      end
+      
       def current_layer
         return @layers[@current_layer_no]
       end
@@ -67,32 +109,53 @@ module Editor
         return @palets[@using_palet_no]
       end
     
-      #Standard methods
+      def h_scroll_tiles
+        return (@scroll_box.h_scrollbar.value / (SRoga::Config::GRID_SIZE * @zoom)).floor
+      end
+      
+      def v_scroll_tiles
+        return (@scroll_box.v_scrollbar.value / (SRoga::Config::GRID_SIZE * @zoom)).floor
+      end
+      
+# methods
       def update_panel
-        @map.base_x = 0
-        @map.base_y = 0
-        @map.update(@map_width, @map_height, [@layers[0]])
+        @map.base_x = @scroll_box.h_scrollbar.value
+        @map.base_y = @scroll_box.v_scrollbar.value
+        @map.update(@scroll_box.width, @scroll_box.height, [@layers[0]])
+
         @texture.clear
         @layers.each{|layer|@map.render(@texture, layer)}
 
-        tx = 0
-        ty = 0
-        tw = @map_width * @zoom
-        th = @map_height * @zoom
-        ttx = -tx / @zoom
-        tty = -ty / @zoom
+        tw = @scroll_box.width * @zoom
+        th = @scroll_box.height * @zoom
 
         @dst_texture = Texture.new(tw, th)
-        @dst_texture.render_texture(@texture, 0, 0, :scale_x => @zoom, :scale_y => @zoom, :src_x => ttx, :src_y => tty, :src_width => [tw, @texture.width - ttx].min, :src_height => [th, @texture.height - tty].min)
+        @dst_texture.render_texture(@texture, 0, 0, :scale_x => @zoom, :scale_y => @zoom, :src_width => [tw, @texture.width].min, :src_height => [th, @texture.height].min)
       end
 
       def render
         update_panel
-        @image.pixbuf = Gdk::Pixbuf.new(@dst_texture.dump('rgb'), Gdk::Pixbuf::ColorSpace.new(Gdk::Pixbuf::ColorSpace::RGB), false, 8, @dst_texture.width, @dst_texture.height, @dst_texture.width * 3)
+        @scroll_box.content_image.pixbuf = Gdk::Pixbuf.new(@dst_texture.dump('rgb'), Gdk::Pixbuf::ColorSpace.new(Gdk::Pixbuf::ColorSpace::RGB), false, 8, @dst_texture.width, @dst_texture.height, @dst_texture.width * 3)
+
+        #@image.set_padding(self.hadjustment.value, self.vadjustment.value)
+        # if false
+          # tx = self.hadjustment.value
+          # ty = self.vadjustment.value
+          # ttx = tx / @zoom
+          # tty = ty / @zoom
+          
+          # pixbuf = Gdk::Pixbuf.new(@dst_texture.dump('rgb'), Gdk::Pixbuf::ColorSpace.new(Gdk::Pixbuf::ColorSpace::RGB), false, 8, 32, 32, 32 * 3)
+          # pixbuf.copy_area(ttx, , @dst_texture.width, @dst_texture.height, @image.pixbuf, 0, 0)
+          # @image.queue_draw
+        # end
+      end
+      
+      def set_map_size(w_count, h_count)
+        @map.set_size(w_count, h_count, @layers)
+        @image_box.set_size_request(w_count * SRoga::Config::GRID_SIZE * @zoom, h_count * SRoga::Config::GRID_SIZE * @zoom)
       end
       
     	def put_tile(sx, sy)
-        
         if self.palet.active?
 
           self.palet.each_chip_info do |id, tx, ty|
@@ -102,7 +165,8 @@ module Editor
               current_layer.map_data[sx + ttx, sy + tty] = id
             end
           end
-          current_layer.render_new_part(sx - 1, sy - 1, sx - 1, sy - 1, 2 + self.palet.frame_w, 2 + self.palet.frame_h)
+          
+          current_layer.render_new_part(sx - 1 - self.h_scroll_tiles, sy - 1 - self.v_scroll_tiles, sx - 1, sy - 1, 2 + self.palet.frame_w, 2 + self.palet.frame_h)
         else
           @memory.each_with_two_index do |id, tx, ty|
             ttx = (tx - (sx - @draw_sx) % self.frame_w) % self.frame_w
@@ -121,30 +185,42 @@ module Editor
     
       #Events
       def on_left_down(event)
-        p "LEFT_DOWN"
-        tx = self.hadjustment.value
-        ty = self.vadjustment.value
-        sx = ((event.x - tx) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
-        sy = ((event.y - ty) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
+        sx = ((event.x + @scroll_box.h_scrollbar.value) / (SRoga::Config::GRID_SIZE * @zoom).to_f).floor
+        sy = ((event.y + @scroll_box.v_scrollbar.value) / (SRoga::Config::GRID_SIZE * @zoom).to_f).floor
+        
+        p "sx #{sx} sy #{sy}"
+        @left_pressed = true
+        if @p_sx == sx && @p_sy == sy
+          return
+        end
+        
+        @p_sx = sx
+        @p_sy = sy
         @draw_sx = sx
         @draw_sy = sy
         self.put_tile(sx, sy)
       end
-    
-      def on_drag_motion(event)
-        p "MOTION"
+
+      def on_left_up(event)
+        @left_pressed = false
+      end
+      
+      def on_motion(event)
+        if @left_pressed
+          on_left_down(event)
+        end
       end
       
       def on_right_down(event)
-        p "RIGHT_DOWN"
-        return true
-        tx = self.hadjustment.value
-        ty = self.vadjustment.value
-        tx2 = ((e.get_x - tx1) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
-        ty2 = ((e.get_y - ty1) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
-        
-        self.select(tx2, ty2)
-        self.set_default_frame(e.get_x, e.get_y)
+      end
+      
+      def on_right_up(event)
+      end
+      
+      def on_resize(event)
+        p event.width
+        #@scroll_box.content_image.set_size_request(self.allocation.width - 32, self.allocation.height - 32)
+        #self.render
       end
     end
   end

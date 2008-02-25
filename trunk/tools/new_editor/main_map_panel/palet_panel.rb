@@ -2,19 +2,18 @@ require "gadgets/frame"
 require "scenes/map/config"
 require "scenes/map/chip_data"
 
-PALET_ROW_COUNT = 6
+PALET_ROW_COUNT = 8
 module Editor
   module Map
     class PaletPanel < Gtk::ScrolledWindow
       include Frame
-      attr_reader :chip_id
+      attr_reader :chip_id, :chipset
       attr_accessor :zoom
       
       def initialize(h)
         super()
         self.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC)
-        
-        @texture = StarRuby::Texture.load("Data/ChipSet/Normal/test.png")
+
         @image = Gtk::Image.new
         @image.set_alignment(0, 0)
 
@@ -74,6 +73,8 @@ module Editor
       
       #Standard Method
       def select(x, y)
+        return if x >= @chipset.w_count || y >= @chipset.h_count
+      
         @sx = x
         @sy = y
         @ex = @sx
@@ -92,8 +93,9 @@ module Editor
       end
     
       def render
-        @dst_texture = Texture.new(@texture.width * @zoom , @texture.height * @zoom)
-        @dst_texture.render_texture(@texture, 0, 0, :scale_x => @zoom, :scale_y => @zoom)
+        return if @chipset.nil?
+        @dst_texture = Texture.new(@chipset.width * @zoom, @chipset.height * @zoom)
+        @chipset.render_sample(@dst_texture, 0, 0, :scale_x => @zoom, :scale_y => @zoom)
         self.render_frame(@dst_texture) if @active
         @image.pixbuf = Gdk::Pixbuf.new(@dst_texture.dump('rgb'), Gdk::Pixbuf::ColorSpace.new(Gdk::Pixbuf::ColorSpace::RGB), false, 8, @dst_texture.width, @dst_texture.height, @dst_texture.width * 3)
       end
@@ -102,8 +104,8 @@ module Editor
       def on_left_down(e)
         tx1 = self.hadjustment.value
         ty1 = self.vadjustment.value
-        tx2 = ((e.x - tx1) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
-        ty2 = ((e.y - ty1) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
+        tx2 = (e.x / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
+        ty2 = (e.y / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
         self.select(tx2, ty2)
       end
       
@@ -114,8 +116,8 @@ module Editor
       def on_right_down(e)
         tx1 = self.hadjustment.value
         ty1 = self.vadjustment.value
-        tx2 = ((e.x - tx1) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
-        ty2 = ((e.y - ty1) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
+        tx2 = (e.x / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
+        ty2 = (e.y / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
         self.select(tx2, ty2)
       end
       

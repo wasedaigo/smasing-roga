@@ -12,10 +12,12 @@ module Editor
         super(h)
         @chipset_no = 1
       end
-
+      
+      def load_chipset
+        @chipset = SRoga::MapChipset.new("ChipSet", 16)
+      end
+      
     	def on_drag_motion(e)
-       
-        
         if e.button == 1
           tx, ty = self.calc_scrolled_position(0, 0)
           @ex = ((e.x - tx) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
