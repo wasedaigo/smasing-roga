@@ -7,13 +7,15 @@ module Editor
         super
         self.set_tab_pos(Gtk::POS_BOTTOM)
         
-        @palet = NormalPaletPanel.new(480)
-        self.append_page(@palet, Gtk::Label.new("Normal Tile"))
+        @palet1 = NormalPaletPanel.new(480)
+        self.append_page(@palet1, Gtk::Label.new("Normal Tile"))
         
+        @palet2 = NormalPaletPanel.new(480)
+        self.append_page(@palet2, Gtk::Label.new("Normal Tile2"))
       end
       
       def palets
-        return [@palet]
+        return [@palet1, @palet2]
       end
     end
   end

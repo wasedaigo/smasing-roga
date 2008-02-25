@@ -41,7 +41,7 @@ module SRoga
     def getKey x, y
       return x + (y << BIT)
     end
-
+    
     # Chip Collisions
     def get_chip_collision(x, y)
       return @collision_data[x, y]
@@ -96,18 +96,44 @@ module SRoga
       end
     end
     
+    def set_size(w_count, h_count, layers)
+      if @w_count == w_count && @h_count == h_count
+        return
+      end
+      @w_count = w_count
+      @h_count = h_count
+      self.set_show_size(w_count, h_count, layers)
+    end
+
+    def set_show_size(show_w_count, show_h_count, layers)
+      tw = [show_w_count, @w_count].min
+      th = [show_h_count, @h_count].min
+      if @show_w_count == tw && @show_h_count == th
+        return
+      end
+
+      @px = MIN
+      @py = MIN
+      
+      @show_w_count = tw
+      @show_h_count = th
+      layers.each do |obj|
+        obj.refresh_texture
+      end
+    end
+    
     def update(show_width, show_height, layers)
       # Render Start Position Top Left
-      sx = @base_x/Config::GRID_SIZE
-      sy = @base_y/Config::GRID_SIZE
-
+      sx = (@base_x/Config::GRID_SIZE).floor
+      sy = (@base_y/Config::GRID_SIZE).floor
+      
       # Render grid size
-      w = show_width/Config::GRID_SIZE
-      h = show_height/Config::GRID_SIZE
+      w = (show_width/Config::GRID_SIZE).floor
+      h = (show_height/Config::GRID_SIZE).floor
 
       # Render Delta
-      @dx = @base_x % Config::GRID_SIZE
-      @dy = @base_y % Config::GRID_SIZE
+      @dx = @base_x.floor % Config::GRID_SIZE
+      @dy = @base_y.floor % Config::GRID_SIZE
 
       if sx<0
         sx = 0
@@ -122,6 +148,7 @@ module SRoga
         sx = @w_count - w
         @dx = 0
       end
+      
       if sy>=@h_count - h
         sy = @h_count - h
         @dy = 0

@@ -42,7 +42,7 @@ require  "scenes/map/chip_data"
 
     def render(s, x, y, dx, dy, tx, ty, map_chipset_no, map_data)
       map_chip_no = ChipData.get_map_chip_no(map_data[tx, ty])
-      return if map_chip_no == 0
+      #return if map_chip_no == 0
       s.render_texture(
         @texture, 
         x * @chip_size - dx, 
@@ -53,8 +53,8 @@ require  "scenes/map/chip_data"
       )
     end
     
-    def render_sample(s, x, y)
-      s.render_texture(@texture, x, y)
+    def render_sample(s, x, y, options = [])
+      s.render_texture(@texture, x, y, options)
     end
   end
 end

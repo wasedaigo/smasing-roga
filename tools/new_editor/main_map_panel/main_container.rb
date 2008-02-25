@@ -11,9 +11,15 @@ module Editor
         side_bar.set_width_request(320)
         side_bar.set_height_request(1)
         t.attach(side_bar, 0, 1, 0, 1, 0, Gtk::EXPAND | Gtk::FILL, 0)
-        t.attach(Editor::Map::Mappanel.new(side_bar.palets), 1, 2, 0, 1, Gtk::EXPAND | Gtk::FILL, Gtk::EXPAND | Gtk::FILL)
-        self.add(t)
 
+        side_bar.palets.each do |palet|
+          palet.load_chipset
+          palet.render
+        end
+        
+        t.attach(Editor::Map::Mappanel.new(side_bar.palets), 1, 2, 0, 1, Gtk::EXPAND | Gtk::FILL, Gtk::EXPAND | Gtk::FILL)
+        
+        self.add(t)
       end
     end
   end
