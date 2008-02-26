@@ -5,11 +5,13 @@ require 'scenes/map/auto_map_chipset'
 require 'scenes/map/map_loader'
 require 'scenes/map/config'
 require 'gadgets/scroll_box'
+require 'gadgets/frame'
 
 module Editor
   module Map
     class Mappanel  < Gtk::VBox
-
+      include Frame
+      
       def initialize(palets)
         super()
 
@@ -19,7 +21,7 @@ module Editor
         @tile_h_count = data[:hCount]
        
         @scroll_box = Editor::ScrollBox.new(@tile_w_count * SRoga::Config::GRID_SIZE, @tile_h_count * SRoga::Config::GRID_SIZE, 640, 640)
-        
+
         chipsets = {}
         palets.each_with_index do |palet, i|
           chipsets[i] = palet.chipset
@@ -35,8 +37,13 @@ module Editor
         @p_sx = -1
         @p_sy = -1
         
-        @zoom = 1
-
+        @sx = 0
+        @sy = 0
+        @ex = 0
+        @ey = 0
+        @zoom = 2
+        @frame_zoom = 1
+        
         @map = SRoga::Map.new(@tile_w_count, @tile_h_count, 40, 40, data[:collisionData], chipsets)
         @layers = [SRoga::MapLayer.new(@map, data[:bottomLayer]), SRoga::MapLayer.new(@map, data[:topLayer])]
         @texture = StarRuby::Texture.new(@map.width, @map.height)
@@ -108,11 +115,11 @@ module Editor
       end
     
       def h_scroll_tiles
-        return (@scroll_box.h_scrollbar.value / (SRoga::Config::GRID_SIZE * @zoom)).floor
+        return ((@scroll_box.h_scrollbar.value * @zoom) / (SRoga::Config::GRID_SIZE * @zoom)).floor
       end
       
       def v_scroll_tiles
-        return (@scroll_box.v_scrollbar.value / (SRoga::Config::GRID_SIZE * @zoom)).floor
+        return ((@scroll_box.v_scrollbar.value * @zoom) / (SRoga::Config::GRID_SIZE * @zoom)).floor
       end
       
 # methods
@@ -124,9 +131,11 @@ module Editor
         @texture.clear
         @layers.each{|layer|@map.render(@texture, layer)}
 
-        tw = @scroll_box.width * @zoom
-        th = @scroll_box.height * @zoom
-
+        tw = @scroll_box.width
+        th = @scroll_box.height
+        
+        self.render_frame(@texture, @scroll_box.h_scrollbar.value, @scroll_box.v_scrollbar.value)
+        
         @dst_texture = Texture.new(tw, th)
         @dst_texture.render_texture(@texture, 0, 0, :scale_x => @zoom, :scale_y => @zoom, :src_width => [tw, @texture.width].min, :src_height => [th, @texture.height].min)
       end
@@ -175,16 +184,51 @@ module Editor
             end
           end
           
-          current_layer.render_new_part(sx - 1, sy - 1, sx - 1, sy - 1, 2 + @memory.width, 2 + @memory.height)
+          current_layer.render_new_part(sx - 1 - self.h_scroll_tiles, sy - 1 - self.v_scroll_tiles, sx - 1, sy - 1, 2 + @memory.width, 2 + @memory.height)
         end
         
         self.render
     	end
     
+      def set_default_frame(x, y)
+        @sx, @sy = self.get_abs_location(x, y)
+        
+        if self.palet.active?
+          @ex = @sx + self.palet.frame_w - 1
+          @ey = @sy + self.palet.frame_h - 1
+        else
+          @ex = @sx + @frame_w - 1
+          @ey = @sy + @frame_h - 1
+        end
+      end
+      
+      def select(x, y)
+        @sx = x
+        @sy = y
+        @ex = @sx
+        @ey = @sy
+        
+        @using_palet_no = SRoga::ChipData.get_map_chipset_no(current_layer.map_data[@sx, @sy])
+        @palets.each{|palet|palet.active = false}
+        self.palet.active = true
+        self.palet.select_chip_by_id(SRoga::ChipData.get_map_chip_no(current_layer.map_data[@sx, @sy]))
+      end
+ 
+      def get_abs_location(x, y)
+        sx = ((x + @scroll_box.h_scrollbar.value * @zoom) / (SRoga::Config::GRID_SIZE * @zoom).to_f).floor
+        sy = ((y + @scroll_box.v_scrollbar.value * @zoom) / (SRoga::Config::GRID_SIZE * @zoom).to_f).floor
+        return sx, sy
+      end
+      
+      # def get_rel_location(x, y)
+        # sx = (x / (SRoga::Config::GRID_SIZE * @zoom).to_f).floor
+        # sy = (y / (SRoga::Config::GRID_SIZE * @zoom).to_f).floor
+        # return sx, sy
+      # end
+        
       #Events
       def on_left_down(event)
-        sx = ((event.x + @scroll_box.h_scrollbar.value) / (SRoga::Config::GRID_SIZE * @zoom).to_f).floor
-        sy = ((event.y + @scroll_box.v_scrollbar.value) / (SRoga::Config::GRID_SIZE * @zoom).to_f).floor
+        sx, sy = get_abs_location(event.x, event.y)
         
         @left_pressed = true
         if @p_sx == sx && @p_sy == sy
@@ -203,16 +247,50 @@ module Editor
       end
       
       def on_motion(event)
-        if @left_pressed
-          on_left_down(event)
+      @mode = :put
+      
+      if @left_pressed
+        sx, sy = get_abs_location(event.x, event.y)
+        self.put_tile(sx, sy)
+      end
+      if @right_pressed
+        @mode = :select
+        @ex, @ey = get_abs_location(event.x, event.y)
+        
+      end
+
+      if @mode == :put
+        self.set_default_frame(event.x, event.y)
+      end
+
+      self.render
+      end
+      
+    def on_right_down(e)
+      tx, ty = get_abs_location(e.x, e.y)
+
+      self.select(tx, ty)
+      self.set_default_frame(e.x , e.y)
+      @right_pressed = true
+    end
+
+    def on_right_up(e)
+      @mode = :put
+      @memory = nil
+      p "sx #{@sx} sy #{@sy} ex#{@ex} ey#{@ey}"
+      unless self.frame_w == 1 && self.frame_h == 1
+        arr = []
+        (0 .. (@sy - @ey).abs).each do |ty|
+          (0 .. (@sx - @ex).abs).each do |tx|
+            arr << current_layer.map_data[[@sx, @ex].min + tx, [@sy, @ey].min + ty]
+          end
         end
+
+        @memory = Table.new((@sx - @ex).abs + 1, arr)
+        @palets.each{|palet|palet.active = false}
       end
-      
-      def on_right_down(event)
-      end
-      
-      def on_right_up(event)
-      end
+      @right_pressed = false
+    end
       
       def on_resize(event)
         p event.width

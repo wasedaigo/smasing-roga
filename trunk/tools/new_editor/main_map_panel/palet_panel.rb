@@ -40,7 +40,6 @@ module Editor
       
       def set_signals
         @image_box.signal_connect("motion-notify-event") do |item, event|
-          p event
           self.on_motion(event)
         end
         
@@ -75,7 +74,7 @@ module Editor
       #Property
       def active=(value)
         @active = value
-        self.refresh
+        self.render
       end
       
       def active?
@@ -95,11 +94,11 @@ module Editor
       end
       
       def select_chip_by_id(id)
-        tx1 = (id % PALET_ROW_COUNT) * Config::GRID_SIZE * 2
-        ty1 = (id / PALET_ROW_COUNT) * Config::GRID_SIZE * 2
+        tx1 = (id % PALET_ROW_COUNT) * SRoga::Config::GRID_SIZE * 2
+        ty1 = (id / PALET_ROW_COUNT) * SRoga::Config::GRID_SIZE * 2
 
-        tx2 = (tx1 / (Config::GRID_SIZE.to_f * @zoom)).floor
-        ty2 = (ty1 / (Config::GRID_SIZE.to_f * @zoom)).floor
+        tx2 = (tx1 / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
+        ty2 = (ty1 / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
         self.select(tx2, ty2)
       end
     
@@ -119,6 +118,7 @@ module Editor
         ty2 = (e.y / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
         self.select(tx2, ty2)
         @left_pressed = true
+        self.active = true
       end
       
       def on_left_up(e)
@@ -126,11 +126,6 @@ module Editor
       end
 
       def on_right_down(e)
-        tx1 = self.hadjustment.value
-        ty1 = self.vadjustment.value
-        tx2 = (e.x / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
-        ty2 = (e.y / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
-        self.select(tx2, ty2)
         @right_pressed = true
       end
       
