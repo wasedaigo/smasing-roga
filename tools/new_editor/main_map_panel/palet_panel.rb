@@ -37,30 +37,41 @@ module Editor
         self.render
       end
       
-      def set_panel
-        t = Gtk::EventBox.new
-        t.add_events(Gdk::Event::POINTER_MOTION_MASK)
-        t.add(@image)
-        self.add_with_viewport(t)
-        self.set_signals(t)
-      end
       
-      def set_signals(target)
-        target.signal_connect("event") do |item, event|
-          case(event.event_type)
-            when(Gdk::Event::BUTTON_PRESS)
-              case(event.button)
-                when 1
-                  self.on_left_down(event)
-                when 3
-                  self.on_right_down(event)
-              end
-            when(Gdk::Event::DRAG_MOTION)
-              self.on_drag_motion(event)
+      def set_signals
+        @image_box.signal_connect("motion-notify-event") do |item, event|
+          p event
+          self.on_motion(event)
+        end
+        
+        @image_box.signal_connect("button-press-event") do |item, event|
+          case(event.button)
+            when 1
+              self.on_left_down(event)
+            when 3
+              self.on_right_down(event)
+          end
+        end
+
+        @image_box.signal_connect("button-release-event") do |item, event|
+          case(event.button)
+            when 1
+              self.on_left_up(event)
+            when 3
+              self.on_right_up(event)
           end
         end
       end
-      
+        
+      def set_panel
+        @image_box = Gtk::EventBox.new
+        @image_box.add_events(Gdk::Event::POINTER_MOTION_MASK)
+        @image_box.add(@image)
+        self.add_with_viewport(@image_box)
+ 
+        self.set_signals
+      end
+
       #Property
       def active=(value)
         @active = value
@@ -107,10 +118,11 @@ module Editor
         tx2 = (e.x / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
         ty2 = (e.y / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
         self.select(tx2, ty2)
+        @left_pressed = true
       end
       
-      def on_drag_motion(e)
-      
+      def on_left_up(e)
+        @left_pressed = false
       end
 
       def on_right_down(e)
@@ -119,6 +131,11 @@ module Editor
         tx2 = (e.x / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
         ty2 = (e.y / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
         self.select(tx2, ty2)
+        @right_pressed = true
+      end
+      
+      def on_right_up(e)
+        @right_pressed = false
       end
       
       #Iterator

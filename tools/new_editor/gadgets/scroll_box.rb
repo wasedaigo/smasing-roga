@@ -18,8 +18,8 @@ module Editor
       @v_scrollbar = Gtk::VScrollbar.new
       vbox1 = Gtk::VBox.new
 
-      vbox1.add(@image_box)
-      vbox1.pack_start(@h_scrollbar, true, true, 0)
+      vbox1.pack_start(@image_box, true, true, 0)
+      vbox1.pack_start(@h_scrollbar, false, false, 0)
       
       hbox1 = Gtk::HBox.new
       hbox1.add(vbox1)
