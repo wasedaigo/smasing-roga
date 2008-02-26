@@ -17,11 +17,12 @@ module Editor
         @chipset = SRoga::MapChipset.new("ChipSet", 16)
       end
       
-    	def on_drag_motion(e)
-        if e.button == 1
-          tx, ty = self.calc_scrolled_position(0, 0)
-          @ex = ((e.x - tx) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
-          @ey = ((e.y - ty) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
+    	def on_motion(e)
+        if @left_pressed
+          tx = self.hadjustment.value
+          ty = self.vadjustment.value
+          @ex = ((e.x) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
+          @ey = ((e.y) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
         end
         
         self.render

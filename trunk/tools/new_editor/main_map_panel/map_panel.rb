@@ -35,7 +35,7 @@ module Editor
         @p_sx = -1
         @p_sy = -1
         
-        @zoom = 2
+        @zoom = 1
 
         @map = SRoga::Map.new(@tile_w_count, @tile_h_count, 40, 40, data[:collisionData], chipsets)
         @layers = [SRoga::MapLayer.new(@map, data[:bottomLayer]), SRoga::MapLayer.new(@map, data[:topLayer])]
@@ -78,9 +78,7 @@ module Editor
               self.on_right_up(event)
           end
         end
- 
-        
-        
+
         $window.signal_connect("configure-event") do |item, event|
           self.on_resize(event)
         end
@@ -188,7 +186,6 @@ module Editor
         sx = ((event.x + @scroll_box.h_scrollbar.value) / (SRoga::Config::GRID_SIZE * @zoom).to_f).floor
         sy = ((event.y + @scroll_box.v_scrollbar.value) / (SRoga::Config::GRID_SIZE * @zoom).to_f).floor
         
-        p "sx #{sx} sy #{sy}"
         @left_pressed = true
         if @p_sx == sx && @p_sy == sy
           return
