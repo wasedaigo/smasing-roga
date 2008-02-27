@@ -89,7 +89,7 @@ class Main
 
     
     vbox = Gtk::VBox.new
-    table = Gtk::Table.new(1, 4)
+    table = Gtk::Table.new(1, 4)  
     
     menubar = create_menubar
     table.attach(menubar, 0, 1, 0, 1, Gtk::EXPAND | Gtk::FILL, 0)
@@ -107,11 +107,11 @@ class Main
     window.allow_shrink=true
     window.set_width_request(800)
     window.set_height_request(600)
-   
+
     window.show_all
 
     window.signal_connect("configure_event") do |item, event|
-    	main_container.on_resize(event.width, event.height - 60)
+    	main_container.on_resize(event.width, event.height - 86)
     end
     
     Gtk.main
