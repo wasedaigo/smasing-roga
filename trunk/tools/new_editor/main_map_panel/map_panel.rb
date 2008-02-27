@@ -6,6 +6,7 @@ require 'scenes/map/map_loader'
 require 'scenes/map/config'
 require 'gadgets/scroll_box'
 require 'gadgets/frame'
+require 'cairo'
 
 module Editor
   module Map
@@ -87,13 +88,17 @@ module Editor
         end
        
         @scroll_box.h_scrollbar.adjustment.signal_connect("value-changed") do |item, event|
-          p "H_SCROOLLL"
           self.render
         end
 
         @scroll_box.v_scrollbar.adjustment.signal_connect("value-changed") do |item, event|
           self.render
         end
+        
+        @scroll_box.content_image.signal_connect("expose_event") do
+          self.render
+        end
+        
       end
 
       # Property
@@ -139,7 +144,18 @@ module Editor
 
       def render
         update_panel
-        @scroll_box.content_image.pixbuf = Gdk::Pixbuf.new(@dst_texture.dump('rgb'), Gdk::Pixbuf::ColorSpace.new(Gdk::Pixbuf::ColorSpace::RGB), false, 8, @dst_texture.width, @dst_texture.height, @dst_texture.width * 3)
+        return if @scroll_box.content_image.window.nil?
+
+        # alloc = @scroll_box.content_image.allocation
+        # @scroll_box.content_image.window.draw_arc(area.style.fg_gc(area.state), true, 
+                             # 0, 0, alloc.width, alloc.height, 0, 64 * 360) 
+
+area = @scroll_box.content_image
+buf = Gdk::Pixbuf.new(@dst_texture.dump('rgb'), Gdk::Pixbuf::ColorSpace.new(Gdk::Pixbuf::ColorSpace::RGB), false, 8, @dst_texture.width, @dst_texture.height, @dst_texture.width * 3)
+area.window.draw_pixbuf(area.style.fg_gc(area.state), buf, 0, 0, 0, 0, @dst_texture.width, @dst_texture.height, Gdk::RGB::DITHER_NONE, 0, 0)
+        
+        #@scroll_box.content_image.window.cairo_create
+        #@scroll_box.content_image.pixbuf = 
 
         #@image.set_padding(self.hadjustment.value, self.vadjustment.value)
         # if false
@@ -274,7 +290,7 @@ module Editor
       def on_right_up(e)
         @mode = :put
         @memory = nil
-        p "sx #{@sx} sy #{@sy} ex#{@ex} ey#{@ey}"
+        #p "sx #{@sx} sy #{@sy} ex#{@ex} ey#{@ey}"
         unless self.frame_w == 1 && self.frame_h == 1
           arr = []
           (0 .. (@sy - @ey).abs).each do |ty|
@@ -294,11 +310,11 @@ module Editor
         tw = @tile_w_count * SRoga::Config::GRID_SIZE
         th = @tile_h_count * SRoga::Config::GRID_SIZE
 
-        width = [tw, width].min
-        height = [th, height].min
+        width2 = [tw, width].min
+        height2 = [th, height].min
         
-        @map.set_show_size(width / SRoga::Config::GRID_SIZE, height / SRoga::Config::GRID_SIZE, @layers)
-        @scroll_box.on_resize(width, height)
+        @map.set_show_size(width2 / SRoga::Config::GRID_SIZE, height2 / SRoga::Config::GRID_SIZE, @layers)
+        @scroll_box.on_resize(width2, height2, width, height)
         self.render
       end
     

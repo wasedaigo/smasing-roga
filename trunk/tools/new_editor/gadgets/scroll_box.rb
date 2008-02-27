@@ -5,14 +5,17 @@ module Editor
 #initialize
     def initialize(client_width, client_height, width, height)
       super(false, 0)
-      @content_image = Gtk::Image.new
- 
-      @image_box = Gtk::EventBox.new
-      @image_box.add_events(Gdk::Event::POINTER_MOTION_MASK)
-      @image_box.add_events(Gdk::Event::CONFIGURE)
-      @image_box.add(@content_image)
-      @image_box.set_size_request(width, height)
-      @content_image.set_alignment(0, 0)
+      @content_image = Gtk::DrawingArea.new
+      @content_image.set_size_request(600,600)
+@content_image.add_events(Gdk::Event::POINTER_MOTION_MASK)
+@content_image.add_events(Gdk::Event::BUTTON_PRESS_MASK)
+@content_image.add_events(Gdk::Event::BUTTON_RELEASE_MASK)
+       @image_box = Gtk::EventBox.new
+      # @image_box.add_events(Gdk::Event::POINTER_MOTION_MASK)
+      # @image_box.add_events(Gdk::Event::CONFIGURE)
+      # @image_box.add(@content_image)
+      # @image_box.set_size_request(width, height)
+      #@content_image.set_alignment(0, 0)
       
       
       #vp = Gtk::Viewport.new(Gtk::Adjustment.new(0, 0, 200, 1, 1, 1), Gtk::Adjustment.new(0, 0, 200, 1, 1, 1))
@@ -22,7 +25,7 @@ module Editor
       @v_scrollbar = Gtk::VScrollbar.new
       vbox1 = Gtk::VBox.new
 
-      vbox1.pack_start(@image_box, true, true, 0)
+      vbox1.pack_start(@content_image, true, true, 0)
       vbox1.pack_start(@h_scrollbar, false, false, 0)
       
       hbox1 = Gtk::HBox.new
@@ -38,7 +41,7 @@ module Editor
       hbox1.pack_start(vbox2, false, false, 0)
 
       
-      set_background_image("Data/Icon/tex.png", @image_box)
+      set_background_image("Data/Icon/tex.png", @content_image)
       self.pack_start(hbox1, true, true, 0)
 
       @client_width = client_width
@@ -104,6 +107,8 @@ module Editor
         else
           @h_scrollbar.adjustment.value = [@h_scrollbar.adjustment.value ,t].min
           @h_scrollbar.adjustment.upper = t
+          @h_scrollbar.adjustment.step_increment = SRoga::Config::GRID_SIZE
+          @h_scrollbar.adjustment.page_increment = SRoga::Config::GRID_SIZE * 6
           @h_scrollbar.adjustment.page_size = (t * (self.width / @client_width.to_f)).floor
         end
       end
@@ -117,9 +122,10 @@ module Editor
     end
 
 #events
-    def on_resize(width, height)
+    def on_resize(area_width, area_height, width, height)
       p "RESIZE #{width} * #{height}"
-      self.set_size(width - 32, height - 32)
+      self.set_size_request(width, height)
+      self.set_size(area_width, area_height)
     end
   end
 end
