@@ -14,7 +14,7 @@ module Editor
       
       def initialize(palets)
         super()
-
+        
         # self.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC)
         data = SRoga::MapLoader.loadMap
         @tile_w_count = data[:wCount]
@@ -41,7 +41,7 @@ module Editor
         @sy = 0
         @ex = 0
         @ey = 0
-        @zoom = 2
+        @zoom = 1
         @frame_zoom = 1
         
         @map = SRoga::Map.new(@tile_w_count, @tile_h_count, 40, 40, data[:collisionData], chipsets)
@@ -85,12 +85,9 @@ module Editor
               self.on_right_up(event)
           end
         end
-
-        $window.signal_connect("configure-event") do |item, event|
-          self.on_resize(event)
-        end
-        
+       
         @scroll_box.h_scrollbar.adjustment.signal_connect("value-changed") do |item, event|
+          p "H_SCROOLLL"
           self.render
         end
 
@@ -265,38 +262,46 @@ module Editor
 
       self.render
       end
-      
-    def on_right_down(e)
-      tx, ty = get_abs_location(e.x, e.y)
+        
+      def on_right_down(e)
+        tx, ty = get_abs_location(e.x, e.y)
 
-      self.select(tx, ty)
-      self.set_default_frame(e.x , e.y)
-      @right_pressed = true
-    end
+        self.select(tx, ty)
+        self.set_default_frame(e.x , e.y)
+        @right_pressed = true
+      end
 
-    def on_right_up(e)
-      @mode = :put
-      @memory = nil
-      p "sx #{@sx} sy #{@sy} ex#{@ex} ey#{@ey}"
-      unless self.frame_w == 1 && self.frame_h == 1
-        arr = []
-        (0 .. (@sy - @ey).abs).each do |ty|
-          (0 .. (@sx - @ex).abs).each do |tx|
-            arr << current_layer.map_data[[@sx, @ex].min + tx, [@sy, @ey].min + ty]
+      def on_right_up(e)
+        @mode = :put
+        @memory = nil
+        p "sx #{@sx} sy #{@sy} ex#{@ex} ey#{@ey}"
+        unless self.frame_w == 1 && self.frame_h == 1
+          arr = []
+          (0 .. (@sy - @ey).abs).each do |ty|
+            (0 .. (@sx - @ex).abs).each do |tx|
+              arr << current_layer.map_data[[@sx, @ex].min + tx, [@sy, @ey].min + ty]
+            end
           end
-        end
 
-        @memory = Table.new((@sx - @ex).abs + 1, arr)
-        @palets.each{|palet|palet.active = false}
+          @memory = Table.new((@sx - @ex).abs + 1, arr)
+          @palets.each{|palet|palet.active = false}
+        end
+        @right_pressed = false
       end
-      @right_pressed = false
-    end
+        
+      def on_resize(width, height)
       
-      def on_resize(event)
-        p event.width
-        #@scroll_box.content_image.set_size_request(self.allocation.width - 32, self.allocation.height - 32)
-        #self.render
+        tw = @tile_w_count * SRoga::Config::GRID_SIZE
+        th = @tile_h_count * SRoga::Config::GRID_SIZE
+
+        width = [tw, width].min
+        height = [th, height].min
+        
+        @map.set_show_size(width / SRoga::Config::GRID_SIZE, height / SRoga::Config::GRID_SIZE, @layers)
+        @scroll_box.on_resize(width, height)
+        self.render
       end
+    
     end
   end
 end
