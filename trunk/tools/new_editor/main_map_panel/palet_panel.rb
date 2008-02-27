@@ -67,7 +67,8 @@ module Editor
         @image_box.add_events(Gdk::Event::POINTER_MOTION_MASK)
         @image_box.add(@image)
         self.add_with_viewport(@image_box)
- 
+        set_background_image("Data/Icon/tex.png", @image_box)
+
         self.set_signals
       end
 

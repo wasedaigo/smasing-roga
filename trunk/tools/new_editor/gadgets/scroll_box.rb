@@ -6,7 +6,7 @@ module Editor
     def initialize(client_width, client_height, width, height)
       super(false, 0)
       @content_image = Gtk::Image.new
-
+ 
       @image_box = Gtk::EventBox.new
       @image_box.add_events(Gdk::Event::POINTER_MOTION_MASK)
       @image_box.add_events(Gdk::Event::CONFIGURE)
@@ -14,6 +14,10 @@ module Editor
       @image_box.set_size_request(width, height)
       @content_image.set_alignment(0, 0)
       
+      
+      #vp = Gtk::Viewport.new(Gtk::Adjustment.new(0, 0, 200, 1, 1, 1), Gtk::Adjustment.new(0, 0, 200, 1, 1, 1))
+      #vp.add(@image_box)
+      #vp.set_size_request(200, 200)
       @h_scrollbar = Gtk::HScrollbar.new
       @v_scrollbar = Gtk::VScrollbar.new
       vbox1 = Gtk::VBox.new
@@ -33,6 +37,8 @@ module Editor
       
       hbox1.pack_start(vbox2, false, false, 0)
 
+      
+      set_background_image("Data/Icon/tex.png", @image_box)
       self.pack_start(hbox1, true, true, 0)
 
       @client_width = client_width
@@ -80,6 +86,7 @@ module Editor
     
     def set_size(width, height)
       @content_image.set_size_request(width, height)
+      @image_box.set_size_request(@content_image.width_request, @content_image.height_request)
       self.refresh_scrollbars
     end
     
@@ -91,7 +98,14 @@ module Editor
     def refresh_hscrollbar
       if @client_width > self.width
         t = @client_width - self.width
-        @h_scrollbar.adjustment = Gtk::Adjustment.new(@h_scrollbar.adjustment.value, 0, t, SRoga::Config::GRID_SIZE, SRoga::Config::GRID_SIZE * 6, (t * (self.width / @client_width.to_f)).floor)
+
+        if @h_scrollbar.adjustment.nil?
+          @h_scrollbar.adjustment = Gtk::Adjustment.new(@h_scrollbar.adjustment.value, 0, t, SRoga::Config::GRID_SIZE, SRoga::Config::GRID_SIZE * 6, (t * (self.width / @client_width.to_f)).floor)
+        else
+          @h_scrollbar.adjustment.value = [@h_scrollbar.adjustment.value ,t].min
+          @h_scrollbar.adjustment.upper = t
+          @h_scrollbar.adjustment.page_size = (t * (self.width / @client_width.to_f)).floor
+        end
       end
     end
  
@@ -100,6 +114,12 @@ module Editor
         t = @client_height - self.height
         @v_scrollbar.adjustment = Gtk::Adjustment.new(@v_scrollbar.adjustment.value, 0, t, SRoga::Config::GRID_SIZE, SRoga::Config::GRID_SIZE * 6, (t * (self.width / @client_height.to_f)).floor)
       end
+    end
+
+#events
+    def on_resize(width, height)
+      p "RESIZE #{width} * #{height}"
+      self.set_size(width - 32, height - 32)
     end
   end
 end
