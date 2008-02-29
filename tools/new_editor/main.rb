@@ -105,7 +105,7 @@ class Main
 
     window.add(table)
     window.allow_shrink=true
-    window.set_width_request(800)
+    window.set_width_request(792)
     window.set_height_request(600)
 
     window.show_all

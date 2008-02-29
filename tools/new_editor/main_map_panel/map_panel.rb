@@ -21,7 +21,7 @@ module Editor
         @tile_w_count = data[:wCount]
         @tile_h_count = data[:hCount]
        
-        @scroll_box = Editor::ScrollBox.new(@tile_w_count * SRoga::Config::GRID_SIZE, @tile_h_count * SRoga::Config::GRID_SIZE, 640, 640)
+        @scroll_box = Editor::ScrollBox.new(@tile_w_count * SRoga::Config::GRID_SIZE, @tile_h_count * SRoga::Config::GRID_SIZE, 640, 640, SRoga::Config::GRID_SIZE)
 
         chipsets = {}
         palets.each_with_index do |palet, i|
@@ -146,14 +146,10 @@ module Editor
         update_panel
         return if @scroll_box.content_image.window.nil?
 
-        # alloc = @scroll_box.content_image.allocation
-        # @scroll_box.content_image.window.draw_arc(area.style.fg_gc(area.state), true, 
-                             # 0, 0, alloc.width, alloc.height, 0, 64 * 360) 
-
-area = @scroll_box.content_image
-buf = Gdk::Pixbuf.new(@dst_texture.dump('rgb'), Gdk::Pixbuf::ColorSpace.new(Gdk::Pixbuf::ColorSpace::RGB), false, 8, @dst_texture.width, @dst_texture.height, @dst_texture.width * 3)
-area.window.draw_pixbuf(area.style.fg_gc(area.state), buf, 0, 0, 0, 0, @dst_texture.width, @dst_texture.height, Gdk::RGB::DITHER_NONE, 0, 0)
-        
+        area = @scroll_box.content_image
+        buf = Gdk::Pixbuf.new(@dst_texture.dump('rgb'), Gdk::Pixbuf::ColorSpace.new(Gdk::Pixbuf::ColorSpace::RGB), false, 8, @dst_texture.width, @dst_texture.height, @dst_texture.width * 3)
+        area.window.draw_pixbuf(area.style.fg_gc(area.state), buf, 0, 0, 0, 0, @dst_texture.width, @dst_texture.height, Gdk::RGB::DITHER_NONE, 0, 0)
+                
         #@scroll_box.content_image.window.cairo_create
         #@scroll_box.content_image.pixbuf = 
 
@@ -233,12 +229,6 @@ area.window.draw_pixbuf(area.style.fg_gc(area.state), buf, 0, 0, 0, 0, @dst_text
         return sx, sy
       end
       
-      # def get_rel_location(x, y)
-        # sx = (x / (SRoga::Config::GRID_SIZE * @zoom).to_f).floor
-        # sy = (y / (SRoga::Config::GRID_SIZE * @zoom).to_f).floor
-        # return sx, sy
-      # end
-        
       #Events
       def on_left_down(event)
         sx, sy = get_abs_location(event.x, event.y)
