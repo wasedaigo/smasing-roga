@@ -20,8 +20,17 @@ module Editor
         data = SRoga::MapLoader.loadMap
         @tile_w_count = data[:wCount]
         @tile_h_count = data[:hCount]
-       
-        @scroll_box = Editor::ScrollBox.new(@tile_w_count * SRoga::Config::GRID_SIZE, @tile_h_count * SRoga::Config::GRID_SIZE, 640, 640, SRoga::Config::GRID_SIZE)
+
+        @zoom = 1
+        @scroll_box = Editor::ScrollBox.new(@tile_w_count * self.grid_size, @tile_h_count * self.grid_size, self.grid_size) do |type|
+          case type
+            when "resize":
+              @map.set_show_size(@scroll_box.w_grid_count, @scroll_box.h_grid_count, @layers)
+              self.render
+            when "render"
+              self.render
+          end
+        end
 
         chipsets = {}
         palets.each_with_index do |palet, i|
@@ -42,7 +51,7 @@ module Editor
         @sy = 0
         @ex = 0
         @ey = 0
-        @zoom = 1
+        
         @frame_zoom = 1
         
         @map = SRoga::Map.new(@tile_w_count, @tile_h_count, 40, 40, data[:collisionData], chipsets)
@@ -59,12 +68,18 @@ module Editor
         # self.render
       end
       
+      def queue_resize_no_redraw
+        super
+        @scroll_box.queue_resize_no_redraw
+        @scroll_box.content_image.queue_resize_no_redraw
+      end
+      
       def set_panel
         self.add(@scroll_box)
       end
       
       def set_signals
-      
+        
         @scroll_box.signal_connect("motion-notify-event") do |item, event|
           self.on_motion(event)
         end
@@ -85,20 +100,7 @@ module Editor
             when 3
               self.on_right_up(event)
           end
-        end
-       
-        @scroll_box.h_scrollbar.adjustment.signal_connect("value-changed") do |item, event|
-          self.render
-        end
-
-        @scroll_box.v_scrollbar.adjustment.signal_connect("value-changed") do |item, event|
-          self.render
-        end
-        
-        @scroll_box.content_image.signal_connect("expose_event") do
-          self.render
-        end
-        
+        end       
       end
 
       # Property
@@ -112,38 +114,54 @@ module Editor
         return @layers[@current_layer_no]
       end
       
+      def grid_size
+        return (SRoga::Config::GRID_SIZE * @zoom)
+      end
+      
       def palet
         return @palets[@using_palet_no]
       end
     
+      def scroll_x
+        return @scroll_box.h_scrollbar.value.floor * self.grid_size
+      end
+      
+      def scroll_y
+        return @scroll_box.v_scrollbar.value.floor * self.grid_size  
+      end
+      
       def h_scroll_tiles
-        return ((@scroll_box.h_scrollbar.value * @zoom) / (SRoga::Config::GRID_SIZE * @zoom)).floor
+        return @scroll_box.h_scrollbar.value.floor
       end
       
       def v_scroll_tiles
-        return ((@scroll_box.v_scrollbar.value * @zoom) / (SRoga::Config::GRID_SIZE * @zoom)).floor
+        return @scroll_box.v_scrollbar.value.floor
       end
       
 # methods
       def update_panel
-        @map.base_x = @scroll_box.h_scrollbar.value
-        @map.base_y = @scroll_box.v_scrollbar.value
-        @map.update(@scroll_box.width, @scroll_box.height, [@layers[0]])
+        @map.base_x = self.scroll_x / @zoom
+        @map.base_y = self.scroll_y / @zoom
+        @map.update(@scroll_box.width / @zoom, @scroll_box.height / @zoom, [@layers[0]])
 
         @texture.clear
         @layers.each{|layer|@map.render(@texture, layer)}
 
+        #tw = [@scroll_box.content_width, @texture.width * @zoom].min
+        #th = [@scroll_box.content_height, @texture.height * @zoom].min
+        
         tw = @scroll_box.width
         th = @scroll_box.height
         
-        self.render_frame(@texture, @scroll_box.h_scrollbar.value, @scroll_box.v_scrollbar.value)
-        
+        self.render_frame(@texture, self.scroll_x, self.scroll_y)
+
         @dst_texture = Texture.new(tw, th)
-        @dst_texture.render_texture(@texture, 0, 0, :scale_x => @zoom, :scale_y => @zoom, :src_width => [tw, @texture.width].min, :src_height => [th, @texture.height].min)
+        
+        @dst_texture.render_texture(@texture, 0, 0, :scale_x => @zoom, :scale_y => @zoom, :src_width => [tw / @zoom, @texture.width].min, :src_height => [th / @zoom, @texture.height].min)
       end
 
       def render
-        update_panel
+        self.update_panel
         return if @scroll_box.content_image.window.nil?
 
         area = @scroll_box.content_image
@@ -168,7 +186,7 @@ module Editor
       
       def set_map_size(w_count, h_count)
         @map.set_size(w_count, h_count, @layers)
-        @image_box.set_size_request(w_count * SRoga::Config::GRID_SIZE * @zoom, h_count * SRoga::Config::GRID_SIZE * @zoom)
+        @image_box.set_size_request(w_count * self.grid_size, h_count * self.grid_size)
       end
       
     	def put_tile(sx, sy)
@@ -224,8 +242,8 @@ module Editor
       end
  
       def get_abs_location(x, y)
-        sx = ((x + @scroll_box.h_scrollbar.value * @zoom) / (SRoga::Config::GRID_SIZE * @zoom).to_f).floor
-        sy = ((y + @scroll_box.v_scrollbar.value * @zoom) / (SRoga::Config::GRID_SIZE * @zoom).to_f).floor
+        sx = ((x + self.scroll_x) / self.grid_size.to_f).floor
+        sy = ((y + self.scroll_y) / self.grid_size.to_f).floor
         return sx, sy
       end
       
@@ -258,8 +276,11 @@ module Editor
       end
       if @right_pressed
         @mode = :select
-        @ex, @ey = get_abs_location(event.x, event.y)
         
+        tx, ty = get_abs_location(event.x, event.y)
+        if self.current_layer.map_data.exists?(tx, ty)
+          @ex, @ey = tx, ty
+        end
       end
 
       if @mode == :put
@@ -271,7 +292,9 @@ module Editor
         
       def on_right_down(e)
         tx, ty = get_abs_location(e.x, e.y)
-
+        unless self.current_layer.map_data.exists?(tx, ty)
+          return
+        end
         self.select(tx, ty)
         self.set_default_frame(e.x , e.y)
         @right_pressed = true
@@ -280,7 +303,6 @@ module Editor
       def on_right_up(e)
         @mode = :put
         @memory = nil
-        #p "sx #{@sx} sy #{@sy} ex#{@ex} ey#{@ey}"
         unless self.frame_w == 1 && self.frame_h == 1
           arr = []
           (0 .. (@sy - @ey).abs).each do |ty|
@@ -294,18 +316,11 @@ module Editor
         end
         @right_pressed = false
       end
-        
-      def on_resize(width, height)
-      
-        tw = @tile_w_count * SRoga::Config::GRID_SIZE
-        th = @tile_h_count * SRoga::Config::GRID_SIZE
 
-        width2 = [tw, width].min
-        height2 = [th, height].min
-        
-        @map.set_show_size(width2 / SRoga::Config::GRID_SIZE, height2 / SRoga::Config::GRID_SIZE, @layers)
-        @scroll_box.on_resize(width2, height2, width, height)
-        self.render
+      
+      def on_resize(width, height)
+        @scroll_box.set_size_request(width, height)
+        p ""
       end
     
     end

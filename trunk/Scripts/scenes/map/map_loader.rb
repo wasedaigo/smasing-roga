@@ -6,8 +6,8 @@ require  "scenes/map/collision_type"
     def self.loadMap
 
       # load map chip counts(width & height)
-      wCount = 60
-      hCount = 60
+      wCount = 80
+      hCount = 80
       
       # load bottom layer
       t = Array.new(wCount * hCount)
