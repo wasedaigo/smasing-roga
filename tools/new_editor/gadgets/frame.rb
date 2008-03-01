@@ -26,8 +26,8 @@ module Frame
     def render_frame(s, dx = 0, dy = 0)
       s.render_texture(
         self.select_frame, 
-        [@sx, @ex].min * SRoga::Config::GRID_SIZE * @frame_zoom - dx, 
-        [@sy, @ey].min * SRoga::Config::GRID_SIZE * @frame_zoom - dy, 
+        [@sx, @ex].min * SRoga::Config::GRID_SIZE * @frame_zoom - dx / @zoom, 
+        [@sy, @ey].min * SRoga::Config::GRID_SIZE * @frame_zoom - dy / @zoom, 
         :alpha => 150, 
         :scale_x => @frame_zoom, 
         :scale_y => @frame_zoom

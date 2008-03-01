@@ -34,7 +34,7 @@ def set_background_image(path, target)
   #style.set_fg_pixmap(Gtk::STATE_SELECTED, pixmap)
   
   target.style = style
-p "CHANGE STYLE"
+
 end
 
 class Main

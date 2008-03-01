@@ -92,7 +92,7 @@ module SRoga
     end
 
     def update(sx, sy, w, h, dx, dy)
-
+      #p "TES + #{sx},#{sy},#{w},#{h},#{dx},#{dy}"
       tw = w + EX_GRID
       th = h + EX_GRID
       #@texture.clear
