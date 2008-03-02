@@ -81,7 +81,7 @@ class Main
 
     # window.set_geometry_hints(window, geometry, mask)
 
-    window.title = "Hello Buttons"
+    window.title = "Map Editor"
     window.signal_connect("delete_event") do
     	Gtk::main_quit
     	false
