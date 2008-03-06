@@ -10,18 +10,17 @@ require 'cairo'
 
 module Editor
   module Map
-    class Mappanel  < Gtk::VBox
+    class Mappanel < Gtk::VBox
       include Frame
       
       def initialize(palets)
         super()
         
-        # self.set_policy(Gtk::POLICY_AUTOMATIC, Gtk::POLICY_AUTOMATIC)
         data = SRoga::MapLoader.loadMap
         @tile_w_count = data[:wCount]
         @tile_h_count = data[:hCount]
 
-        @zoom = 1
+        @zoom = 2
         @scroll_box = Editor::ScrollBox.new(@tile_w_count * self.grid_size, @tile_h_count * self.grid_size, self.grid_size) do |type|
           case type
             when "resize":
@@ -57,8 +56,7 @@ module Editor
         @map = SRoga::Map.new(@tile_w_count, @tile_h_count, 40, 40, data[:collisionData], chipsets)
         @layers = [SRoga::MapLayer.new(@map, data[:bottomLayer]), SRoga::MapLayer.new(@map, data[:topLayer])]
         @texture = StarRuby::Texture.new(@map.width, @map.height)
-        
-        
+
         # self.set_panel
         self.set_panel
         self.set_signals
@@ -68,11 +66,11 @@ module Editor
         # self.render
       end
       
-      def queue_resize_no_redraw
-        super
-        @scroll_box.queue_resize_no_redraw
-        @scroll_box.content_image.queue_resize_no_redraw
-      end
+      # def queue_resize_no_redraw
+        # super
+        # @scroll_box.queue_resize_no_redraw
+        # @scroll_box.content_image.queue_resize_no_redraw
+      # end
       
       def set_panel
         self.add(@scroll_box)
@@ -115,7 +113,7 @@ module Editor
       end
       
       def grid_size
-        return (SRoga::Config::GRID_SIZE * @zoom)
+        return SRoga::Config::GRID_SIZE * @zoom
       end
       
       def palet
@@ -156,7 +154,6 @@ module Editor
         self.render_frame(@texture, self.scroll_x, self.scroll_y)
 
         @dst_texture = Texture.new(tw, th)
-        
         @dst_texture.render_texture(@texture, 0, 0, :scale_x => @zoom, :scale_y => @zoom, :src_width => [tw / @zoom, @texture.width].min, :src_height => [th / @zoom, @texture.height].min)
       end
 
@@ -167,7 +164,7 @@ module Editor
         area = @scroll_box.content_image
         buf = Gdk::Pixbuf.new(@dst_texture.dump('rgb'), Gdk::Pixbuf::ColorSpace.new(Gdk::Pixbuf::ColorSpace::RGB), false, 8, @dst_texture.width, @dst_texture.height, @dst_texture.width * 3)
         area.window.draw_pixbuf(area.style.fg_gc(area.state), buf, 0, 0, 0, 0, @dst_texture.width, @dst_texture.height, Gdk::RGB::DITHER_NONE, 0, 0)
-                
+
         #@scroll_box.content_image.window.cairo_create
         #@scroll_box.content_image.pixbuf = 
 
@@ -193,6 +190,7 @@ module Editor
         if self.palet.active?
 
           self.palet.each_chip_info do |id, tx, ty|
+            
             ttx = (tx - (sx - @draw_sx) % self.palet.frame_w) % self.palet.frame_w
             tty = (ty - (sy - @draw_sy) % self.palet.frame_h) % self.palet.frame_h
             if current_layer.map_data.exists?(sx + ttx, sy + tty)
@@ -230,13 +228,14 @@ module Editor
       end
       
       def select(x, y)
+
         @sx = x
         @sy = y
         @ex = @sx
         @ey = @sy
-        
+
         @using_palet_no = SRoga::ChipData.get_map_chipset_no(current_layer.map_data[@sx, @sy])
-        @palets.each{|palet|palet.active = false}
+        
         self.palet.active = true
         self.palet.select_chip_by_id(SRoga::ChipData.get_map_chip_no(current_layer.map_data[@sx, @sy]))
       end
@@ -295,9 +294,11 @@ module Editor
         unless self.current_layer.map_data.exists?(tx, ty)
           return
         end
+        
         self.select(tx, ty)
         self.set_default_frame(e.x , e.y)
         @right_pressed = true
+        self.render
       end
 
       def on_right_up(e)
@@ -315,14 +316,14 @@ module Editor
           @palets.each{|palet|palet.active = false}
         end
         @right_pressed = false
+        self.render
       end
 
       
       def on_resize(width, height)
         @scroll_box.set_size_request(width, height)
-        p ""
+        p
       end
-    
     end
   end
 end

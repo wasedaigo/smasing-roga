@@ -6,8 +6,6 @@ module Editor
 #initialize
     def initialize(client_width, client_height, grid_size, &resize_event)
       super(false, 0)
-      
-
       @resize_event = resize_event
       @grid_size = grid_size.to_f
       
@@ -34,9 +32,7 @@ module Editor
       t = Gtk::EventBox.new
       t.set_size_request(16, 16)
       vbox2.pack_start(t, false, false, 0)
-      
       hbox1.pack_start(vbox2, false, false, 0)
-
       
       set_background_image("Data/Icon/tex.png", @content_image)
       self.pack_start(hbox1, true, true, 0)
@@ -98,7 +94,7 @@ module Editor
     def set_client_size(width, height)
       @client_width = width
       @client_height = height
-      @content_image.set_size_request(self.width_request, self.height_request)
+      #@content_image.set_size_request(self.width_request, self.height_request)
       self.refresh_scrollbars
     end
     
@@ -126,6 +122,7 @@ module Editor
     end
  
     def refresh_vscrollbar
+      
       if @client_height > self.content_height
         @v_scrollbar.adjustment.upper = (client_height / self.grid_size).floor
         @v_scrollbar.adjustment.step_increment = 1
@@ -136,6 +133,7 @@ module Editor
       end
       
       @v_scrollbar.adjustment.value = [@v_scrollbar.adjustment.upper - @v_scrollbar.adjustment.page_size, @v_scrollbar.adjustment.value].min
+      #p "height:#{self.content_height} client_height:#{self.client_height} ajv#{@v_scrollbar.adjustment.value} upper#{@v_scrollbar.adjustment.upper} gs#{@v_scrollbar.adjustment.page_size}"
     end
 
 #events

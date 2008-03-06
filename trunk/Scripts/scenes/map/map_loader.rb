@@ -23,7 +23,7 @@ require  "scenes/map/collision_type"
       # load top layer
       t = Array.new(wCount * hCount)
       t.each_with_index do |obj, i|
-        t[i] = ChipData.generate(1, 0)
+        t[i] = ChipData.generate(0, 0)
         if(i % wCount == 0 || i % wCount == wCount - 1 || i / wCount == 0 || i / wCount == hCount - 1)
           t[i] = ChipData.generate(0, 6)
         end

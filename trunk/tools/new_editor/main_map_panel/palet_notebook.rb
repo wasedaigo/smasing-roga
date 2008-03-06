@@ -17,6 +17,10 @@ module Editor
       def palets
         return [@palet1, @palet2]
       end
+      
+      def on_resize(width, height)
+        @palet1.on_resize(width, height)
+      end
     end
   end
 end
