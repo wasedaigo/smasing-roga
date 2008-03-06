@@ -8,11 +8,17 @@ module Editor
         super
         @palet_note_book = Editor::Map::PaletNotebook.new
         self.pack1(@palet_note_book, true, true)
-        self.pack2(Editor::Map::MapNavigator.new, false, true)
+        
+        @map_navigator = Editor::Map::MapNavigator.new
+        self.pack2(@map_navigator, false, true)
       end
       
       def palets
         return @palet_note_book.palets
+      end
+      
+      def on_resize(width, height)
+        @palet_note_book.on_resize(width, height - @map_navigator.height_request)
       end
     end
   end
