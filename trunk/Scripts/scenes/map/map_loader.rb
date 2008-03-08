@@ -1,45 +1,56 @@
-require  "scenes/map/collision_type"
+require "scenes/map/collision_type"
+require "scenes/map/palet_chip"
+require "scenes/map/auto_map_chipset"
+require "scenes/map/map_chipset"
+require "scenes/map/map_chip"
+require "scenes/map/config"
+require "lib/table"
 
   module SRoga
   module MapLoader
 
-    def self.loadMap
+    def self.load_normal_chipset
+      return SRoga::MapChipset.new("ChipSet", SRoga::Config::GRID_SIZE)
+    end
+  
+    def self.load_auto_chipset
+      return SRoga::AutoMapChipset.new("ChipSet2", SRoga::Config::GRID_SIZE)
+    end
+  
+    def self.load_map(chipsets)
 
       # load map chip counts(width & height)
-      wCount = 80
-      hCount = 80
-      
+      w_count = 80
+      h_count = 80
+
       # load bottom layer
-      t = Array.new(wCount * hCount)
+      t = Array.new(w_count * h_count)
       t.each_with_index do |obj, i|
-      #v = 1 if rand(4) == 0
-        t[i] = ChipData.generate(0, 0)
-        if(i % wCount == 0 || i % wCount == wCount - 1 || i / wCount == 0 || i / wCount == hCount - 1)
-          t[i] = ChipData.generate(0, 6)
+        if(i % w_count == 0 || i % w_count == w_count - 1 || i / w_count == 0 || i / w_count == h_count - 1)
+          t[i] = SRoga::MapChip.new(chipsets[0].palet_chips[1], 0, 0)
+        else
+          t[i] = SRoga::MapChip.new(chipsets[0].palet_chips[7], 0, 0)
         end
       end
-      bottomLayer = Table.new(wCount, t)
+      bottom_layer = DLib::Table.new(w_count, t)
 
       # load top layer
-      t = Array.new(wCount * hCount)
+      t = Array.new(w_count * h_count)
       t.each_with_index do |obj, i|
-        t[i] = ChipData.generate(0, 0)
-        if(i % wCount == 0 || i % wCount == wCount - 1 || i / wCount == 0 || i / wCount == hCount - 1)
-          t[i] = ChipData.generate(0, 6)
-        end
+        t[i] = SRoga::MapChip.new(chipsets[0].palet_chips[0], 0, 0)
       end
-      topLayer = Table.new(wCount, t)
 
-      # load collision data
-      t = Array.new(wCount * hCount)
-      bottomLayer.each_with_index do |obj, i|
+      top_layer = DLib::Table.new(w_count, t)
+
+      # merge collision data
+      t = Array.new(w_count * h_count)
+      t.each_with_index do |obj, i|
         t[i] = CollisionType::NONE
-        t[i] = CollisionType::ALL if ChipData.equal?(obj, 0, 1)
       end
-      collisionData = Table.new(wCount, t)
+      collision_data = DLib::Table.new(w_count, t)
 
       # return results
-      {:wCount=>wCount, :hCount=>hCount, :topLayer=>topLayer, :bottomLayer=>bottomLayer, :collisionData=>collisionData}
+      {:w_count=>w_count, :h_count=>h_count, :top_layer=>top_layer, :bottom_layer=>bottom_layer, :collision_data => collision_data}
     end
   end
 end

@@ -18,9 +18,10 @@ module Editor
       def initialize(palets)
         super()
         
-        data = SRoga::MapLoader.loadMap
-        @tile_w_count = data[:wCount]
-        @tile_h_count = data[:hCount]
+        data = SRoga::MapLoader.load_map([palets[0].chipset, palets[1].chipset])
+        
+        @tile_w_count = data[:w_count]
+        @tile_h_count = data[:h_count]
 
         @zoom_index = 2
         @zoom = ZOOMS[@zoom_index]
@@ -34,14 +35,10 @@ module Editor
           end
         end
 
-        chipsets = {}
-        palets.each_with_index do |palet, i|
-          chipsets[i] = palet.chipset
-        end
-
         @memory = nil
         @palets = palets
-        @using_palet_no = 0
+        @current_palet = @palets[0]
+        
         @current_layer_no = 0
         
         @left_pressed = false
@@ -56,8 +53,8 @@ module Editor
         
         @frame_zoom = 1
         
-        @map = SRoga::Map.new(@tile_w_count, @tile_h_count, 40, 40, data[:collisionData], chipsets)
-        @layers = [SRoga::MapLayer.new(@map, data[:bottomLayer]), SRoga::MapLayer.new(@map, data[:topLayer])]
+        @map = SRoga::Map.new(@tile_w_count, @tile_h_count, 40, 40, data[:collision_data])
+        @layers = [SRoga::MapLayer.new(@map, data[:bottom_layer]), SRoga::MapLayer.new(@map, data[:top_layer])]
         @texture = StarRuby::Texture.new(@map.width, @map.height)
 
         # self.set_panel
@@ -111,10 +108,6 @@ module Editor
       
       def grid_size
         return SRoga::Config::GRID_SIZE * @zoom
-      end
-      
-      def palet
-        return @palets[@using_palet_no]
       end
     
       def scroll_x
@@ -201,28 +194,29 @@ module Editor
       end
       
     	def put_tile(sx, sy)
-        if self.palet.active?
+        if @current_palet.active?
 
-          self.palet.each_chip_info do |id, tx, ty|
-            
-            ttx = (tx - (sx - @draw_sx) % self.palet.frame_w) % self.palet.frame_w
-            tty = (ty - (sy - @draw_sy) % self.palet.frame_h) % self.palet.frame_h
+          @current_palet.each_chip_info do |id, tx, ty|
+            ttx = (tx - (sx - @draw_sx) % @current_palet.frame_w) % @current_palet.frame_w
+            tty = (ty - (sy - @draw_sy) % @current_palet.frame_h) % @current_palet.frame_h
             if current_layer.map_data.exists?(sx + ttx, sy + tty)
-              current_layer.map_data[sx + ttx, sy + tty] = id
+              current_layer.map_data[sx + ttx, sy + tty].palet_chip = id
             end
           end
           
-          current_layer.render_new_part(sx - 1 - self.h_scroll_tiles, sy - 1 - self.v_scroll_tiles, sx - 1, sy - 1, 2 + self.palet.frame_w, 2 + self.palet.frame_h)
+          current_layer.update_complementary_data(sx - 1 - self.h_scroll_tiles, sy - 1 - self.v_scroll_tiles, sx - 1, sy - 1, 2 + @current_palet.frame_w, 2 + @current_palet.frame_h)
+          current_layer.render_new_part(sx - 1 - self.h_scroll_tiles, sy - 1 - self.v_scroll_tiles, sx - 1, sy - 1, 2 + @current_palet.frame_w, 2 + @current_palet.frame_h)
         else
           @memory.each_with_two_index do |id, tx, ty|
             ttx = (tx - (sx - @draw_sx) % self.frame_w) % self.frame_w
             tty = (ty - (sy - @draw_sy) % self.frame_h) % self.frame_h
             
             if current_layer.map_data.exists?(sx + ttx, sy + tty)
-              current_layer.map_data[sx + ttx, sy + tty] = id
+              current_layer.map_data[sx + ttx, sy + tty].palet_chip = id.palet_chip
             end
           end
           
+          current_layer.update_complementary_data(sx - 1 - self.h_scroll_tiles, sy - 1 - self.v_scroll_tiles, sx - 1, sy - 1, 2 + @memory.width, 2 + @memory.height)
           current_layer.render_new_part(sx - 1 - self.h_scroll_tiles, sy - 1 - self.v_scroll_tiles, sx - 1, sy - 1, 2 + @memory.width, 2 + @memory.height)
         end
         
@@ -232,9 +226,9 @@ module Editor
       def set_default_frame(x, y)
         @sx, @sy = self.get_abs_location(x, y)
         
-        if self.palet.active?
-          @ex = @sx + self.palet.frame_w - 1
-          @ey = @sy + self.palet.frame_h - 1
+        if @current_palet.active?
+          @ex = @sx + @current_palet.frame_w - 1
+          @ey = @sy + @current_palet.frame_h - 1
         else
           @ex = @sx + @frame_w - 1
           @ey = @sy + @frame_h - 1
@@ -242,16 +236,25 @@ module Editor
       end
       
       def select(x, y)
-
         @sx = x
         @sy = y
         @ex = @sx
         @ey = @sy
 
-        @using_palet_no = SRoga::ChipData.get_map_chipset_no(current_layer.map_data[@sx, @sy])
+        self.set_current_palet(current_layer.map_data[@sx, @sy].palet_chip.chipset)
         
-        self.palet.active = true
-        self.palet.select_chip_by_id(SRoga::ChipData.get_map_chip_no(current_layer.map_data[@sx, @sy]))
+        @palets.each{|palet|palet.active = false}
+        @current_palet.active = true
+        @current_palet.select_chip_by_no(current_layer.map_data[@sx, @sy].palet_chip.chip_no)
+      end
+ 
+      def set_current_palet(chipset)
+        @palets.each_with_index do |obj, i|
+          if obj.chipset == chipset
+            @current_palet = obj
+            break
+          end
+        end
       end
  
       def get_abs_location(x, y)
@@ -262,6 +265,13 @@ module Editor
       
       #Events
       def on_left_down(event)
+        @palets.each_with_index do |obj, i|
+          if obj.active
+            @current_palet = obj
+            break
+          end
+        end
+
         sx, sy = get_abs_location(event.x, event.y)
         
         @left_pressed = true
@@ -326,7 +336,7 @@ module Editor
             end
           end
 
-          @memory = Table.new((@sx - @ex).abs + 1, arr)
+          @memory = DLib::Table.new((@sx - @ex).abs + 1, arr)
           @palets.each{|palet|palet.active = false}
         end
         @right_pressed = false
