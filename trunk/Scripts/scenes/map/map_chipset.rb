@@ -1,27 +1,28 @@
-require  "lib/table"
-require  "scenes/map/collision_type"
-require  "scenes/map/chip_data"
+require "scenes/map/collision_type"
+require "scenes/map/palet_chip"
 
   module SRoga
   class MapChipset
-    attr_accessor  :chip_size, :texture
+    attr_reader  :chip_size, :texture, :palet_chips
 
+    def self.load(filename)
+
+    end
+    
     def initialize(filename, chip_size)
+
       @chip_size = chip_size
       @texture = $res.get_texture(filename)
-
-      @collisions = Array.new(w_count * h_count)
-      for i in (0..@collisions.length)
-        @collisions[i] = 0
+      
+      @palet_chips = []
+      (self.w_count * self.h_count).times do |i|
+        @palet_chips << SRoga::PaletChip.new(self, i, self.w_count, CollisionType::NONE)
       end
-
-      @collisions[0] = CollisionType::ALL
-      @collisions[1] = CollisionType::NONE
-      @collisions[2] = CollisionType::NONE
     end
 
+    # property
     def collisionData(no)
-      @collisions[no]
+      @palet_chips[no].collision_data
     end
 
     def width
@@ -39,22 +40,18 @@ require  "scenes/map/chip_data"
     def h_count
       height / @chip_size
     end
-
-    def render(s, x, y, dx, dy, tx, ty, map_chipset_no, map_data)
-      map_chip_no = ChipData.get_map_chip_no(map_data[tx, ty])
-      #return if map_chip_no == 0
-      s.render_texture(
-        @texture, 
-        x * @chip_size - dx, 
-        y * @chip_size - dy, 
-        :src_x => (map_chip_no % w_count ) * @chip_size, 
-        :src_y => (map_chip_no / w_count ) * @chip_size,  
-        :src_width => @chip_size, :src_height=> @chip_size
-      )
+        
+    def sample_texture
+      return @texture
     end
     
+    #methods
+    def render(s, x, y, dx, dy, tx, ty, map_chipset_no, map_data)
+      map_data[tx, ty].render(x, y, dx, dy)
+    end
+
     def render_sample(s, x, y, options = [])
-      s.render_texture(@texture, x, y, options)
+      s.render_texture(self.sample_texture, x, y, options)
     end
   end
 end
