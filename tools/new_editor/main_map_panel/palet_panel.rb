@@ -1,6 +1,5 @@
 require "gadgets/frame"
 require "scenes/map/config"
-require "scenes/map/chip_data"
 
 PALET_ROW_COUNT = 8
 module Editor
@@ -8,10 +7,12 @@ module Editor
     class PaletPanel < Gtk::VBox
       include Frame
       attr_reader :chip_id, :chipset
-      attr_accessor :zoom
+      attr_accessor :zoom, :active
       
-      def initialize(h)
+      def initialize(palet_notebook, h)
         super()
+        
+        @palet_notebook = palet_notebook
         
         self.set_height_request(h)
         
@@ -28,6 +29,7 @@ module Editor
         
         @chip_id = 0
         @chipset_no = 0
+        @chipset = nil
         @active = true
 
         @frame_w = 0
@@ -112,10 +114,9 @@ module Editor
         self.render
       end
       
-      def select_chip_by_id(id)
-        p id
-        tx1 = (id % PALET_ROW_COUNT) * self.grid_size
-        ty1 = (id / PALET_ROW_COUNT) * self.grid_size
+      def select_chip_by_no(no)
+        tx1 = (no % PALET_ROW_COUNT) * self.grid_size
+        ty1 = (no / PALET_ROW_COUNT) * self.grid_size
 
         tx2 = (tx1 / self.grid_size).floor
         ty2 = (ty1 / self.grid_size).floor
@@ -147,6 +148,9 @@ module Editor
         self.select(tx2, ty2)
         @left_pressed = true
         self.active = true
+        
+        @palet_notebook.palets.each {|obj| obj.active = false}
+        self.active = true
       end
       
       def on_left_up(e)
@@ -161,11 +165,24 @@ module Editor
         @right_pressed = false
       end
 
+    	def on_motion(e)
+        if @left_pressed
+          tx = ((e.x + self.scroll_x) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
+          ty = ((e.y + self.scroll_y) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
+          if tx >= 0 && ty >= 0 && tx < self.grid_x && ty < self.grid_y
+            @ex = ((e.x + self.scroll_x) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
+            @ey = ((e.y + self.scroll_y) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
+          end
+        end
+        
+        self.render
+    	end
+      
       #Iterator
       def each_chip_info
         (0 .. (@sx - @ex).abs).each do |x|
           (0 .. (@sy - @ey).abs).each do |y|
-            yield SRoga::ChipData.generate(@chipset_no, ([@sy, @ey].min + y) * PALET_ROW_COUNT + ([@sx, @ex].min + x)), x, y
+            yield @chipset.palet_chips[([@sy, @ey].min + y) * PALET_ROW_COUNT + ([@sx, @ex].min + x)], x, y
           end
         end
       end

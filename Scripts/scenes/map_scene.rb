@@ -36,9 +36,6 @@ class MapScene
   TestPlayerChip7 = CharacterChip.new(TestPlayerChipSet, 2, 1)
   TestPlayerChip8 = CharacterChip.new(TestPlayerChipSet, 3, 1)
 
-  #TestMapChipset = MapChipset.new "ChipSet", 16
-  TestMapChipset2 = AutoMapChipset.new("ChipSet2", 16)
-  TestMapChipset = MapChipset.new("ChipSet", 16)
 
   def initialize
     tx = 0
@@ -57,10 +54,14 @@ class MapScene
     @charaList << @saru
 
     # make map
-    data = MapLoader.loadMap
-    @map =  Map.new(data[:wCount], data[:hCount], 20, 15, data[:collisionData], 0  => TestMapChipset, 1  => TestMapChipset2)
-    @bottom_layer = MapLayer.new @map, data[:bottomLayer]
-    @top_layer = MapLayer.new @map, data[:topLayer]
+    chipsets = []
+    chipsets << MapLoader.load_normal_chipset
+    chipsets << MapLoader.load_auto_chipset
+    data = MapLoader.load_map(chipsets)
+    
+    @map =  Map.new(data[:w_count], data[:h_count], 20, 15, data[:collision_data])
+    @bottom_layer = MapLayer.new(@map, data[:bottom_layer])
+    @top_layer = MapLayer.new(@map, data[:top_layer])
 
     @base_x = 0
     @base_y = 0
@@ -167,11 +168,12 @@ class MapScene
 
   def render(s)
     s.clear
+    
     @map.render(s, @bottom_layer)
 
     @charaList.each{|obj|obj.render(s, @map.base_x, @map.base_y)}
 
-    #@map.render s, @top_layer
+    @map.render(s, @top_layer, :alpha => 100)
 
     #@window.render(s)
 
