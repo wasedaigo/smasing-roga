@@ -1,4 +1,3 @@
-require  "scenes/map/chip_data"
 require  "scenes/map/config"
 
 module SRoga
@@ -11,7 +10,6 @@ module SRoga
     def initialize(map, map_data)
       @map = map
       @map_data = map_data
-  
       self.refresh_texture
     end
 
@@ -76,13 +74,29 @@ module SRoga
     
     def render_new_part(rx, ry, sx, sy, w, h)
       # render all visible map chips
+<<<<<<< .mine
+      #p "rx #{rx} ry #{ry} w #{w} h #{h}"
+=======
       
+>>>>>>> .theirs
       self.clear_rect(rx, ry, w, h)
-       
-      i = 0
-      
-      
+
       (0..([sx + w, @map_data.width].min - sx - 1)).each do |x|
+        (0..([sy + h, @map_data.height].min - sy - 1)).each do |y|
+          map_chip = @map_data[sx + x, sy + y]
+          map_chip.palet_chip.render(@texture, rx + x, ry + y, 0, 0, map_chip.sub1, map_chip.sub2)
+<<<<<<< .mine
+
+
+
+
+
+
+
+
+
+
+=======
         (0..([sy + h, @map_data.height].min - sy - 1)).each do |y|
           tx = sx + x
           ty = sy + y
@@ -93,6 +107,7 @@ module SRoga
           m.render(@texture, rx + x, ry + y, 0, 0, tx, ty, map_chipset_no, @map_data)
           i += 1
           #end
+>>>>>>> .theirs
         end
       end
       #p i.to_s
@@ -137,8 +152,19 @@ module SRoga
       end
     end
 
-    def render(s, dx, dy)
-        s.render_texture(@texture, 0, 0, :src_x => dx, :src_y => dy, :src_width => @texture.width - dx, :src_height => @texture.height - dy)
+    def update_complementary_data(rx, ry, sx, sy, w, h)
+          # set complementary values
+          (0..([sx + w, @map_data.width].min - sx - 1)).each do |x|
+            (0..([sy + h, @map_data.height].min - sy - 1)).each do |y|
+              map_chip = @map_data[sx + x, sy + y]
+              map_chip.sub1, map_chip.sub2 = map_chip.palet_chip.get_subs(sx + x, sy + y, @map_data)
+            end
+          end
+    end
+          
+    def render(s, dx, dy, options = {})
+        options.merge!(:src_x => dx, :src_y => dy, :src_width => @texture.width - dx, :src_height => @texture.height - dy)
+        s.render_texture(@texture, 0, 0, options)
     end
   end
 end
