@@ -3,7 +3,7 @@ require  "scenes/map/config"
 
 module SRoga
   class Map
-    attr_reader :map_chipsets, :w_count, :h_count, :show_w_count, :show_h_count
+    attr_reader :w_count, :h_count, :show_w_count, :show_h_count
     attr_accessor :base_x,:base_y
 
     MIN = -999999999999
@@ -11,9 +11,7 @@ module SRoga
     # x and y should be less than 2^BIT
     BIT = 8
 
-    def initialize(w_count, h_count, show_w_count, show_h_count, collision_data, map_chipsets)
-      @map_chipsets = map_chipsets
-
+    def initialize(w_count, h_count, show_w_count, show_h_count, collision_data)
       # size restriction
       raise raise("map size have to be less than 256 * 256") if (w_count >= (1 << BIT)) || (h_count >= (1 << BIT))
 
@@ -124,6 +122,10 @@ module SRoga
     
     def update(show_width, show_height, layers)
       #p "-------------UPDATE-------------"
+
+      #@px = MIN
+      #@py = MIN
+      #p "-------------UPDATE-------------"
       
       @px = MIN
       @py = MIN
@@ -171,8 +173,8 @@ module SRoga
       #p "---------------------------------"
     end
 
-    def render(s, layer)
-      layer.render(s, @dx, @dy)
+    def render(s, layer, options = {})
+      layer.render(s, @dx, @dy, options)
     end
   end
 end
