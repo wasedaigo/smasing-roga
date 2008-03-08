@@ -1,5 +1,5 @@
 module SRoga
-  module ChipData
+  class ChipData
 
     # | MapChipSetNo | MapChipNo | sub1 | sub2 |
     #|           8bit        |         16bit  | 4bit  | 4bit  |

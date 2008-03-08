@@ -11,10 +11,15 @@ require 'gtk2'
 require 'gnomecanvas2'
 require 'main_map_panel/main_container'
 
-def set_background_image(path, target)
+def getPixmap(path)
   tex = StarRuby::Texture.load(path)
   pixbuf = Gdk::Pixbuf.new(tex.dump('rgb'), Gdk::Pixbuf::ColorSpace.new(Gdk::Pixbuf::ColorSpace::RGB), false, 8, tex.width, tex.height, tex.width * 3)
   pixmap, mask = pixbuf.render_pixmap_and_mask(0)
+  return pixmap
+end
+
+def set_background_image(path, target)
+  pixmap = getPixmap(path)
   #target.style.set_bg_pixmap(Gtk::STATE_NORMAL, pixmap)
 
   style = target.style
@@ -38,7 +43,6 @@ def set_background_image(path, target)
 end
 
 class Main
-
   def create_menubar
     menubar = Gtk::MenuBar.new
 
@@ -56,12 +60,18 @@ class Main
   def create_toolbar
     toolbar = Gtk::Toolbar.new
     toolbar.append("Horizontal", "Horizontal toolbar layout",
-       "Toolbar/Horizontal", Gtk::Image.new("test.xpm")){
-      toolbar.orientation = Gtk::ORIENTATION_HORIZONTAL
-    }
+       "Toolbar/Horizontal", Gtk::Image.new("test.xpm")){}
+
     toolbar.append("Vertical", "Vertical toolbar layout",
+       "Toolbar/Vertical", Gtk::Image.new("test.xpm")){}
+       
+    toolbar.append("ZoomIn", "Vertical toolbar layout",
        "Toolbar/Vertical", Gtk::Image.new("test.xpm")){
-      toolbar.orientation = Gtk::ORIENTATION_VERTICAL
+      @main_container.map_panel.zoom_in
+    }
+    toolbar.append("ZoomOut", "Vertical toolbar layout",
+       "Toolbar/Vertical", Gtk::Image.new("test.xpm")){
+      @main_container.map_panel.zoom_out
     }
     toolbar.append_space
     return toolbar
@@ -97,8 +107,8 @@ class Main
     toolbar = create_toolbar
     table.attach(toolbar, 0, 1, 1, 2, Gtk::EXPAND | Gtk::FILL, 0)
     
-    main_container = Editor::Map::MainContainer.new
-    table.attach(main_container, 0, 1, 2, 3, Gtk::EXPAND | Gtk::FILL, Gtk::EXPAND | Gtk::FILL)
+    @main_container = Editor::Map::MainContainer.new
+    table.attach(@main_container, 0, 1, 2, 3, Gtk::EXPAND | Gtk::FILL, Gtk::EXPAND | Gtk::FILL)
 
     statusbar = Gtk::Statusbar.new
     table.attach(statusbar, 0, 1, 3, 4, Gtk::EXPAND | Gtk::FILL, 0)
@@ -111,9 +121,10 @@ class Main
     window.show_all
 
     window.signal_connect("configure_event") do |item, event|
-    	main_container.on_resize(event.width, event.height - 86)
+    	@main_container.on_resize(event.width, event.height - 86)
     end
-    
+    #p "----------------------------"
+    #p "MAIN"
     Gtk.main
   end
 end

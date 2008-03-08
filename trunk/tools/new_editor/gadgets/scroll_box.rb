@@ -15,6 +15,7 @@ module Editor
       @content_image.add_events(Gdk::Event::BUTTON_PRESS_MASK)
       @content_image.add_events(Gdk::Event::BUTTON_RELEASE_MASK)
         
+      @scroll_valid = false
       @h_scrollbar = Gtk::HScrollbar.new
       @v_scrollbar = Gtk::VScrollbar.new
       vbox1 = Gtk::VBox.new
@@ -37,23 +38,21 @@ module Editor
       set_background_image("Data/Icon/tex.png", @content_image)
       self.pack_start(hbox1, true, true, 0)
 
-      @client_width = client_width
-      @client_height = client_height
-      
       @content_image.signal_connect("expose_event") do
-        self.on_resize()
+        self.on_resize
       end
 
       @h_scrollbar.adjustment.signal_connect("value-changed") do |item, event|
-        @resize_event.call("render")
+        @resize_event.call("render") if @scroll_valid
       end
 
       @v_scrollbar.adjustment.signal_connect("value-changed") do |item, event|
-        @resize_event.call("render")
+        @resize_event.call("render") if @scroll_valid
       end
       
-      self.set_client_size(@client_width, @client_height)
+      self.set_client_size(client_width, client_height)
       self.set_size(1, 1)
+      @scroll_valid = true
     end
     
 # Property
@@ -87,15 +86,13 @@ module Editor
     
     def grid_size=(value)
       return if @grid_size == value
-      @grid_size = value.to_f
-      self.refresh_scrollbars
+      @grid_size = value
     end
 # methods
     def set_client_size(width, height)
       @client_width = width
       @client_height = height
       #@content_image.set_size_request(self.width_request, self.height_request)
-      self.refresh_scrollbars
     end
     
     def set_size(width, height)
@@ -103,14 +100,16 @@ module Editor
     end
     
     def refresh_scrollbars
+      @scroll_valid = false
       self.refresh_hscrollbar
       self.refresh_vscrollbar
+      @scroll_valid = true
     end
     
     def refresh_hscrollbar
-    #p "w1:#{@content_image.allocation.width} width:#{self.content_width} client_width:#{self.client_width} ajv#{@h_scrollbar.adjustment.value}"
+    #p "w1:#{@content_image.allocation.width} width:#{self.content_width} client_width:#{@client_width} ajv#{@h_scrollbar.adjustment.value}"
       if @client_width > self.content_width
-        @h_scrollbar.adjustment.upper = (client_width / self.grid_size).floor
+        @h_scrollbar.adjustment.upper = (@client_width / self.grid_size).floor
         @h_scrollbar.adjustment.step_increment = 1
         @h_scrollbar.adjustment.page_increment = 6
         @h_scrollbar.adjustment.page_size = (self.content_width / self.grid_size).floor
@@ -119,12 +118,13 @@ module Editor
       end
       
       @h_scrollbar.adjustment.value = [@h_scrollbar.adjustment.upper - @h_scrollbar.adjustment.page_size, @h_scrollbar.adjustment.value].min
+      @h_scrollbar.queue_draw
     end
  
     def refresh_vscrollbar
       
       if @client_height > self.content_height
-        @v_scrollbar.adjustment.upper = (client_height / self.grid_size).floor
+        @v_scrollbar.adjustment.upper = (@client_height / self.grid_size).floor
         @v_scrollbar.adjustment.step_increment = 1
         @v_scrollbar.adjustment.page_increment = 6
         @v_scrollbar.adjustment.page_size = (self.content_height / self.grid_size).floor
@@ -133,19 +133,20 @@ module Editor
       end
       
       @v_scrollbar.adjustment.value = [@v_scrollbar.adjustment.upper - @v_scrollbar.adjustment.page_size, @v_scrollbar.adjustment.value].min
-      #p "height:#{self.content_height} client_height:#{self.client_height} ajv#{@v_scrollbar.adjustment.value} upper#{@v_scrollbar.adjustment.upper} gs#{@v_scrollbar.adjustment.page_size}"
+      @v_scrollbar.queue_draw
+      #p "height:#{self.content_height} client_height:#{@client_height} ajv#{@v_scrollbar.adjustment.value} upper#{@v_scrollbar.adjustment.upper} gs#{@v_scrollbar.adjustment.page_size}"
     end
 
 #events
     def on_resize
-      width = [client_width, self.content_width].min
-      height = [client_height, self.content_height].min
+      width = [@client_width, self.content_width].min
+      height = [@client_height, self.content_height].min
 
       set_size_request(width, height)
       self.set_size(width, height)
-
-      @resize_event.call("resize")
+      
       self.refresh_scrollbars
+      @resize_event.call("resize")
     end
   end
 end

@@ -37,8 +37,8 @@ class MapScene
   TestPlayerChip8 = CharacterChip.new(TestPlayerChipSet, 3, 1)
 
   #TestMapChipset = MapChipset.new "ChipSet", 16
-  TestMapChipset = AutoMapChipset.new("ChipSet2", 16)
-  TestMapChipset2 = MapChipset.new("ChipSet", 16)
+  TestMapChipset2 = AutoMapChipset.new("ChipSet2", 16)
+  TestMapChipset = MapChipset.new("ChipSet", 16)
 
   def initialize
     tx = 0
