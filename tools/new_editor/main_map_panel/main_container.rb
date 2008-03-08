@@ -3,6 +3,7 @@ require 'main_map_panel/map_panel'
 module Editor
   module Map
     class MainContainer < Gtk::HBox
+      attr_reader :map_panel
       def initialize
         super
         
@@ -17,14 +18,14 @@ module Editor
           palet.render
         end
 
-        @mappanel = Editor::Map::Mappanel.new(@side_bar.palets)
-        t.attach(@mappanel, 1, 2, 0, 1, Gtk::EXPAND | Gtk::FILL, Gtk::EXPAND | Gtk::FILL)
+        @map_panel = Editor::Map::MapPanel.new(@side_bar.palets)
+        t.attach(@map_panel, 1, 2, 0, 1, Gtk::EXPAND | Gtk::FILL, Gtk::EXPAND | Gtk::FILL)
         
         self.add(t)
       end
       
       def on_resize(width, height)
-        @mappanel.on_resize(width - @side_bar.width_request, height)
+        @map_panel.on_resize(width - @side_bar.width_request, height)
         @side_bar.on_resize(@side_bar.width_request, height)
       end
     end

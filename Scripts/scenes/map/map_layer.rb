@@ -76,23 +76,31 @@ module SRoga
     
     def render_new_part(rx, ry, sx, sy, w, h)
       # render all visible map chips
-      self.clear_rect(rx, ry, w, h)
       
-      (0..(w - 1)).each do |x|
-        (0..(h - 1)).each do |y|
+      self.clear_rect(rx, ry, w, h)
+       
+      i = 0
+      
+      
+      (0..([sx + w, @map_data.width].min - sx - 1)).each do |x|
+        (0..([sy + h, @map_data.height].min - sy - 1)).each do |y|
           tx = sx + x
           ty = sy + y
-          if @map_data.exists?(tx, ty)
-            map_chipset_no = ChipData.get_map_chipset_no(@map_data[tx, ty])
-            m = @map.map_chipsets[map_chipset_no]
-            m.render(@texture, rx + x, ry + y, 0, 0, tx, ty, map_chipset_no, @map_data)
-          end
+          #if @map_data.exists?(tx, ty)
+          map_chipset_no = ChipData.get_map_chipset_no(@map_data[tx, ty])
+          m = @map.map_chipsets[map_chipset_no]
+          
+          m.render(@texture, rx + x, ry + y, 0, 0, tx, ty, map_chipset_no, @map_data)
+          i += 1
+          #end
         end
       end
+      #p i.to_s
     end
 
     def update(sx, sy, w, h, dx, dy)
       #p "TES + #{sx},#{sy},#{w},#{h},#{dx},#{dy}"
+      
       tw = w + EX_GRID
       th = h + EX_GRID
       #@texture.clear
@@ -130,7 +138,7 @@ module SRoga
     end
 
     def render(s, dx, dy)
-      s.render_texture(@texture, 0, 0, :src_x => dx, :src_y => dy, :src_width => @texture.width - dx, :src_height => @texture.height - dy)
+        s.render_texture(@texture, 0, 0, :src_x => dx, :src_y => dy, :src_width => @texture.width - dx, :src_height => @texture.height - dy)
     end
   end
 end

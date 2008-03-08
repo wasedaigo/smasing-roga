@@ -16,7 +16,7 @@ class Table
     return [width, height]
   end
 
-  def exists? x, y
+  def exists?(x, y)
     return (x >= 0 and x < width and y >= 0 and y < height)
   end
 
@@ -24,13 +24,11 @@ class Table
     data.map! {|obj| obj = value}
   end
 
-  def [] x, y
-    raise IndexError unless exists?(x, y)
+  def [](x, y)
     data[x + y * width]
   end
 
-  def []= x, y, value
-    raise IndexError unless exists?(x, y)
+  def []=(x, y, value)
     data[x + y * width] = value
   end
 

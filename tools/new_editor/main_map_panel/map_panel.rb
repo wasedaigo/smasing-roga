@@ -10,8 +10,10 @@ require 'cairo'
 
 module Editor
   module Map
-    class Mappanel < Gtk::VBox
+    class MapPanel < Gtk::VBox
       include Frame
+      
+      ZOOMS = [0.5, 1, 2, 3, 4]
       
       def initialize(palets)
         super()
@@ -20,7 +22,8 @@ module Editor
         @tile_w_count = data[:wCount]
         @tile_h_count = data[:hCount]
 
-        @zoom = 2
+        @zoom_index = 2
+        @zoom = ZOOMS[@zoom_index]
         @scroll_box = Editor::ScrollBox.new(@tile_w_count * self.grid_size, @tile_h_count * self.grid_size, self.grid_size) do |type|
           case type
             when "resize":
@@ -101,13 +104,7 @@ module Editor
         end       
       end
 
-      # Property
-      def client_size
-        self.width
-        self.height
-        return w, h
-      end
-      
+      # Property     
       def current_layer
         return @layers[@current_layer_no]
       end
@@ -136,6 +133,23 @@ module Editor
         return @scroll_box.v_scrollbar.value.floor
       end
       
+      def zoom=(value)
+        @zoom = value
+        @scroll_box.set_client_size(@tile_w_count * self.grid_size, @tile_h_count * self.grid_size)
+        @scroll_box.grid_size = self.grid_size
+        @scroll_box.refresh_scrollbars
+        @scroll_box.on_resize
+      end
+
+      def zoom_in
+        @zoom_index += 1 if @zoom_index < ZOOMS.length - 1
+        self.zoom = ZOOMS[@zoom_index]
+      end
+      
+      def zoom_out
+        @zoom_index -= 1 if @zoom_index >0
+        self.zoom = ZOOMS[@zoom_index]
+      end
 # methods
       def update_panel
         @map.base_x = self.scroll_x / @zoom
@@ -147,7 +161,7 @@ module Editor
 
         #tw = [@scroll_box.content_width, @texture.width * @zoom].min
         #th = [@scroll_box.content_height, @texture.height * @zoom].min
-        
+
         tw = @scroll_box.width
         th = @scroll_box.height
         

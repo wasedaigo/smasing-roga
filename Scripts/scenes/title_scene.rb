@@ -32,8 +32,8 @@ class TitleScene
 
   def render(s)
     s.clear
-    s.render_texture @title_texture, 0, 0
-    @menu_window.render s
+    s.render_texture(@title_texture, 0, 0)
+    @menu_window.render(s)
   end
 
 end

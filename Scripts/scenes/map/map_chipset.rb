@@ -49,7 +49,7 @@ require  "scenes/map/chip_data"
         y * @chip_size - dy, 
         :src_x => (map_chip_no % w_count ) * @chip_size, 
         :src_y => (map_chip_no / w_count ) * @chip_size,  
-        :src_width=>@chip_size, :src_height=>@chip_size
+        :src_width => @chip_size, :src_height=> @chip_size
       )
     end
     
