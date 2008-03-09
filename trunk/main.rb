@@ -16,7 +16,7 @@ require  "scenes/battle_scene"
 require  "scenes/map_scene"
 
 Game.title = "Test Game"
-Game.fps = 30
+Game.fps = 3000
 scene_stack = SceneStack.new(TitleScene.new)
 #scene_stack.push(BattleScene.new)
 FONT = Font.new("Arial", 12)
