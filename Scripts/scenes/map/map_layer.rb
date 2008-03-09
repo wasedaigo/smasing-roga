@@ -74,40 +74,15 @@ module SRoga
     
     def render_new_part(rx, ry, sx, sy, w, h)
       # render all visible map chips
-<<<<<<< .mine
+
       #p "rx #{rx} ry #{ry} w #{w} h #{h}"
-=======
-      
->>>>>>> .theirs
+
       self.clear_rect(rx, ry, w, h)
 
       (0..([sx + w, @map_data.width].min - sx - 1)).each do |x|
         (0..([sy + h, @map_data.height].min - sy - 1)).each do |y|
           map_chip = @map_data[sx + x, sy + y]
           map_chip.palet_chip.render(@texture, rx + x, ry + y, 0, 0, map_chip.sub1, map_chip.sub2)
-<<<<<<< .mine
-
-
-
-
-
-
-
-
-
-
-=======
-        (0..([sy + h, @map_data.height].min - sy - 1)).each do |y|
-          tx = sx + x
-          ty = sy + y
-          #if @map_data.exists?(tx, ty)
-          map_chipset_no = ChipData.get_map_chipset_no(@map_data[tx, ty])
-          m = @map.map_chipsets[map_chipset_no]
-          
-          m.render(@texture, rx + x, ry + y, 0, 0, tx, ty, map_chipset_no, @map_data)
-          i += 1
-          #end
->>>>>>> .theirs
         end
       end
       #p i.to_s

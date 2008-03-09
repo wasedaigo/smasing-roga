@@ -121,14 +121,6 @@ module SRoga
     end
     
     def update(show_width, show_height, layers)
-      #p "-------------UPDATE-------------"
-
-      #@px = MIN
-      #@py = MIN
-      #p "-------------UPDATE-------------"
-      
-      @px = MIN
-      @py = MIN
       # Render Start Position Top Left
       sx = (@base_x/Config::GRID_SIZE).floor
       sy = (@base_y/Config::GRID_SIZE).floor
