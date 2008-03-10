@@ -65,13 +65,21 @@ class Main
     toolbar.append("Vertical", "Vertical toolbar layout",
        "Toolbar/Vertical", Gtk::Image.new("test.xpm")){}
        
-    toolbar.append("ZoomIn", "Vertical toolbar layout",
+    toolbar.append("ZoomIn", "ZoomIn",
        "Toolbar/Vertical", Gtk::Image.new("test.xpm")){
       @main_container.map_panel.zoom_in
     }
-    toolbar.append("ZoomOut", "Vertical toolbar layout",
+    toolbar.append("ZoomOut", "ZoomOut",
        "Toolbar/Vertical", Gtk::Image.new("test.xpm")){
       @main_container.map_panel.zoom_out
+    }
+    toolbar.append("BottomLayer", "BottomLayer",
+       "Toolbar/Vertical", Gtk::Image.new("test.xpm")){
+      @main_container.map_panel.current_layer_no = 0
+    }
+    toolbar.append("TopLayer", "TopLayer",
+       "Toolbar/Vertical", Gtk::Image.new("test.xpm")){
+      @main_container.map_panel.current_layer_no = 1
     }
     toolbar.append_space
     return toolbar

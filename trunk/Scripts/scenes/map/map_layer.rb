@@ -14,9 +14,12 @@ module SRoga
     end
 
     def refresh_texture
-      t = Texture.new((@map.show_w_count + EX_GRID) * Config::GRID_SIZE, (@map.show_h_count + EX_GRID) * Config::GRID_SIZE)
+      tw = (@map.show_w_count + EX_GRID) * Config::GRID_SIZE
+      th = (@map.show_h_count + EX_GRID) * Config::GRID_SIZE
+      t = Texture.new(tw, th)
       t.render_texture(@texture, 0, 0) unless @texture.nil?
       @texture = t
+      @buffer = Texture.new(tw, th)
     end
     
     def width
@@ -117,7 +120,13 @@ module SRoga
         end
 
         # reuse texture where can be used
-        @texture.render_texture(@texture, tx1 * Config::GRID_SIZE, ty1 * Config::GRID_SIZE, :src_x => tx2 * Config::GRID_SIZE, :src_y => ty2 * Config::GRID_SIZE, :src_width => (tw - abs(dx)) * Config::GRID_SIZE, :src_height => (th - abs(dy)) * Config::GRID_SIZE)
+        @buffer.clear
+        @buffer.render_texture(@texture, tx1 * Config::GRID_SIZE, ty1 * Config::GRID_SIZE, :src_x => tx2 * Config::GRID_SIZE, :src_y => ty2 * Config::GRID_SIZE, :src_width => (tw - abs(dx)) * Config::GRID_SIZE, :src_height => (th - abs(dy)) * Config::GRID_SIZE)
+        
+        # swap buffer and texture
+        t = @texture
+        @texture = @buffer
+        @buffer = t
 
         # render new area
         render_new_part(tw - dx, 0, sx + tw - dx, sy, dx, th) if dx > 0 # Right

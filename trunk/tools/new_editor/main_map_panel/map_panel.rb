@@ -14,7 +14,6 @@ module Editor
       include Frame
       
       ZOOMS = [0.5, 1, 2, 3, 4]
-      
       def initialize(palets)
         super()
         
@@ -101,7 +100,12 @@ module Editor
         end       
       end
 
-      # Property     
+      # Property 
+      def current_layer_no=(value)
+        @current_layer_no = value
+        self.render
+      end
+      
       def current_layer
         return @layers[@current_layer_no]
       end
@@ -147,11 +151,16 @@ module Editor
       def update_panel
         @map.base_x = self.scroll_x / @zoom
         @map.base_y = self.scroll_y / @zoom
-        @map.update(@scroll_box.width / @zoom, @scroll_box.height / @zoom, [@layers[0]])
-
+        @map.update(@scroll_box.width / @zoom, @scroll_box.height / @zoom, @layers)
+        
         @texture.clear
-        @layers.each{|layer|@map.render(@texture, layer)}
-
+        @map.render(@texture, @layers[0])
+        if(@layers[1] == self.current_layer)
+          @map.render(@texture, @layers[1])
+        else
+          @map.render(@texture, @layers[1], :alpha => 120)
+        end
+        
         #tw = [@scroll_box.content_width, @texture.width * @zoom].min
         #th = [@scroll_box.content_height, @texture.height * @zoom].min
 
