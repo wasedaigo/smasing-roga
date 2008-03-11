@@ -7,6 +7,5 @@ module SRoga
       @sub1 = sub1
       @sub2 = sub2
     end
-
   end
 end

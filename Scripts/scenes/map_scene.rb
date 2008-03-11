@@ -36,7 +36,6 @@ class MapScene
   TestPlayerChip7 = CharacterChip.new(TestPlayerChipSet, 2, 1)
   TestPlayerChip8 = CharacterChip.new(TestPlayerChipSet, 3, 1)
 
-
   def initialize
     tx = 0
     ty = 0
@@ -59,7 +58,7 @@ class MapScene
     chipsets << MapLoader.load_auto_chipset
     data = MapLoader.load_map(chipsets)
     
-    @map =  Map.new(data[:w_count], data[:h_count], 20, 15, data[:collision_data])
+    @map =  Map.new(data[:w_count], data[:h_count], 20, 15, SRoga::Config::GRID_SIZE, data[:collision_data])
     @bottom_layer = MapLayer.new(@map, data[:bottom_layer])
     @top_layer = MapLayer.new(@map, data[:top_layer])
 

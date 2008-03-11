@@ -50,7 +50,7 @@ require "scenes/map/palet_chip"
       map_data[tx, ty].render(x, y, dx, dy)
     end
 
-    def render_sample(s, x, y, options = [])
+    def render_sample(s, x, y, options = {})
       s.render_texture(self.sample_texture, x, y, options)
     end
   end

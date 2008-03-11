@@ -27,9 +27,9 @@ require "lib/table"
       t = Array.new(w_count * h_count)
       t.each_with_index do |obj, i|
         if(i % w_count == 0 || i % w_count == w_count - 1 || i / w_count == 0 || i / w_count == h_count - 1)
-          t[i] = SRoga::MapChip.new(chipsets[0].palet_chips[1], 0, 0)
+          t[i] = SRoga::MapChip.new(chipsets[0].palet_chips[11], 0, 0)
         else
-          t[i] = SRoga::MapChip.new(chipsets[0].palet_chips[7], 0, 0)
+          t[i] = SRoga::MapChip.new(chipsets[0].palet_chips[12], 0, 0)
         end
       end
       bottom_layer = DLib::Table.new(w_count, t)

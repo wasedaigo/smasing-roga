@@ -1,5 +1,3 @@
-require  "scenes/map/config"
-
 module SRoga
   class MapLayer
     attr_reader :map_data, :mapChipsetNoData
@@ -14,8 +12,8 @@ module SRoga
     end
 
     def refresh_texture
-      tw = (@map.show_w_count + EX_GRID) * Config::GRID_SIZE
-      th = (@map.show_h_count + EX_GRID) * Config::GRID_SIZE
+      tw = (@map.show_w_count + EX_GRID) * @map.grid_size
+      th = (@map.show_h_count + EX_GRID) * @map.grid_size
       t = Texture.new(tw, th)
       t.render_texture(@texture, 0, 0) unless @texture.nil?
       @texture = t
@@ -23,11 +21,11 @@ module SRoga
     end
     
     def width
-      Config::GRID_SIZE * @map_data.width
+      @map.grid_size * @map_data.width
     end
 
     def height
-      Config::GRID_SIZE * @map_data.height
+      @map.grid_size * @map_data.height
     end
 
     def abs(value)
@@ -55,10 +53,10 @@ module SRoga
         return
       end
       
-      tw = (w + tx) * Config::GRID_SIZE
-      th = (h + ty) * Config::GRID_SIZE
-      sx = sx * Config::GRID_SIZE
-      sy = sy * Config::GRID_SIZE
+      tw = (w + tx) * @map.grid_size
+      th = (h + ty) * @map.grid_size
+      sx = sx * @map.grid_size
+      sy = sy * @map.grid_size
       
       if sx + tw > @texture.width
         tw = @texture.width - sx
@@ -72,7 +70,11 @@ module SRoga
         return
       end
 
-      @texture.fill_rect(sx, sy, tw, th, Color.new(0,0,0,0))
+      if(@base)
+        @texture.fill_rect(sx, sy, tw, th, Color.new(0,0,0,255))
+      else
+        @texture.fill_rect(sx, sy, tw, th, Color.new(0,0,0,0))
+      end
     end
     
     def render_new_part(rx, ry, sx, sy, w, h)
@@ -85,7 +87,9 @@ module SRoga
       (0..([sx + w, @map_data.width].min - sx - 1)).each do |x|
         (0..([sy + h, @map_data.height].min - sy - 1)).each do |y|
           map_chip = @map_data[sx + x, sy + y]
-          map_chip.palet_chip.render(@texture, rx + x, ry + y, 0, 0, map_chip.sub1, map_chip.sub2)
+          unless(map_chip.palet_chip.chip_no == 0)
+            map_chip.palet_chip.render(@texture, rx + x, ry + y, 0, 0, map_chip.sub1, map_chip.sub2)
+          end
         end
       end
       #p i.to_s
@@ -121,7 +125,7 @@ module SRoga
 
         # reuse texture where can be used
         @buffer.clear
-        @buffer.render_texture(@texture, tx1 * Config::GRID_SIZE, ty1 * Config::GRID_SIZE, :src_x => tx2 * Config::GRID_SIZE, :src_y => ty2 * Config::GRID_SIZE, :src_width => (tw - abs(dx)) * Config::GRID_SIZE, :src_height => (th - abs(dy)) * Config::GRID_SIZE)
+        @buffer.render_texture(@texture, tx1 * @map.grid_size, ty1 * @map.grid_size, :src_x => tx2 * @map.grid_size, :src_y => ty2 * @map.grid_size, :src_width => (tw - abs(dx)) * @map.grid_size, :src_height => (th - abs(dy)) * @map.grid_size)
         
         # swap buffer and texture
         t = @texture
@@ -147,7 +151,10 @@ module SRoga
     end
           
     def render(s, dx, dy, options = {})
-        options.merge!(:src_x => dx, :src_y => dy, :src_width => @texture.width - dx, :src_height => @texture.height - dy)
+        options[:src_x] = (options[:src_x].nil?) ? dx : dx + options[:src_x]
+        options[:src_y] = (options[:src_y].nil?) ? dy : dy + options[:src_y]
+        options[:src_width] = (options[:src_width].nil?) ? @texture.width - dx : options[:src_width]
+        options[:src_height] = (options[:src_height].nil?) ? @texture.height - dy : options[:src_height]
         s.render_texture(@texture, 0, 0, options)
     end
   end

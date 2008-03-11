@@ -5,6 +5,7 @@ module SRoga
     def initialize(chipset, chip_no, width, collision_data)
       @chipset = chipset
       @chip_no = chip_no
+      @width = width
       @sx = chip_no % width
       @sy = chip_no / width
       @collision_data = collision_data
@@ -28,6 +29,10 @@ module SRoga
     
     def get_subs(tx, ty, map_data)
       return 0, 0
+    end
+    
+    def immutable_palet_chip
+       @chipset
     end
   end
 end
