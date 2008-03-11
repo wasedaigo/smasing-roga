@@ -135,6 +135,7 @@ module Editor
       def render
         return if @chipset.nil?
         return if @scroll_box.content_image.window.nil?
+        return if @scroll_box.width <= 1 || @scroll_box.height <= 1
 
         if(@dst_texture.nil? || (@dst_texture.width != @scroll_box.width || @dst_texture.height != @scroll_box.height))
           @dst_texture = Texture.new(@scroll_box.width, @scroll_box.height)
@@ -142,12 +143,13 @@ module Editor
         @dst_texture.fill(Color.new(0, 0, 0, 255))
         
         if @texture == nil || (@texture.width != (@scroll_box.width / @zoom) || @texture.height != (@scroll_box.height / @zoom))
+          p "w #{@scroll_box.width} h#{@scroll_box.height} zoom#{@zoom}"
           @texture = Texture.new(@scroll_box.width / @zoom, @scroll_box.height / @zoom)
         end
         @texture.fill(Color.new(0, 0, 0, 255))
      
         @chipset.render_sample(@texture, 0, 0, :src_x => self.scroll_x / @zoom, :src_y => self.scroll_y / @zoom)
-        @frame.render(@texture, self.grid_size / @zoom, [@sx, @ex].min + scroll_w_count, [@sy, @ey].min + scroll_h_count, self.scroll_x, self.scroll_y) if @active
+        @frame.render(@texture, self.grid_size / @zoom, [@sx, @ex].min - scroll_w_count, [@sy, @ey].min - scroll_h_count) if @active
         @dst_texture.render_texture(@texture, 0, 0, :scale_x => @zoom, :scale_y => @zoom)
 
         buf = Gdk::Pixbuf.new(@dst_texture.dump('rgb'), Gdk::Pixbuf::ColorSpace.new(Gdk::Pixbuf::ColorSpace::RGB), false, 8, @dst_texture.width, @dst_texture.height, @dst_texture.width * 3)
