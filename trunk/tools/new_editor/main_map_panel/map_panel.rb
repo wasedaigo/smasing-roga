@@ -11,7 +11,6 @@ require 'cairo'
 module Editor
   module Map
     class MapPanel < Gtk::VBox
-      include Frame
       
       ZOOMS = [0.5, 1, 2, 3, 4]
       def initialize(palets)
@@ -24,6 +23,10 @@ module Editor
 
         @zoom_index = 2
         @zoom = ZOOMS[@zoom_index]
+     
+        @map = SRoga::Map.new(@tile_w_count, @tile_h_count, 40, 40, SRoga::Config::GRID_SIZE, data[:collision_data])
+        @layers = [SRoga::MapLayer.new(@map, data[:bottom_layer]), SRoga::MapLayer.new(@map, data[:top_layer])]
+
         @scroll_box = Editor::ScrollBox.new(@tile_w_count * self.grid_size, @tile_h_count * self.grid_size, self.grid_size) do |type|
           case type
             when "resize":
@@ -45,17 +48,24 @@ module Editor
         @p_sx = -1
         @p_sy = -1
         
-        @sx = 0
-        @sy = 0
-        @ex = 0
-        @ey = 0
+        @psx = -1
+        @psy = -1
+        @pex = -1
+        @pey = -1
+        @pframe_width = -1
+        @pframe_height = -1
         
-        @frame_zoom = 1
+        @frame = Frame.new
         
-        @map = SRoga::Map.new(@tile_w_count, @tile_h_count, 40, 40, data[:collision_data])
-        @layers = [SRoga::MapLayer.new(@map, data[:bottom_layer]), SRoga::MapLayer.new(@map, data[:top_layer])]
-        @texture = StarRuby::Texture.new(@map.width, @map.height)
+        @sx = -1
+        @sy = -1
+        @ex = -1
+        @ey = -1
+        @mx = -1
+        @my = -1
 
+        @invalidate_area = {:sx => -1, :sy => -1, :w_count => -1, :h_count => -1}
+        
         # self.set_panel
         self.set_panel
         self.set_signals
@@ -111,7 +121,7 @@ module Editor
       end
       
       def grid_size
-        return SRoga::Config::GRID_SIZE * @zoom
+        return @map.grid_size * @zoom
       end
     
       def scroll_x
@@ -122,12 +132,20 @@ module Editor
         return @scroll_box.v_scrollbar.value.floor * self.grid_size  
       end
       
-      def h_scroll_tiles
+      def scroll_w_count
         return @scroll_box.h_scrollbar.value.floor
       end
       
-      def v_scroll_tiles
+      def scroll_h_count
         return @scroll_box.v_scrollbar.value.floor
+      end
+
+      def w_count
+        (@scroll_box.width / self.grid_size).floor
+      end
+      
+      def h_count
+        (@scroll_box.height / self.grid_size).floor
       end
       
       def zoom=(value)
@@ -148,39 +166,69 @@ module Editor
         self.zoom = ZOOMS[@zoom_index]
       end
 # methods
+
       def update_panel
         @map.base_x = self.scroll_x / @zoom
-        @map.base_y = self.scroll_y / @zoom
-        @map.update(@scroll_box.width / @zoom, @scroll_box.height / @zoom, @layers)
+        @map.base_y = self.scroll_y  / @zoom
+
+        if @texture.nil? || (@texture.width != @map.show_width || @texture.height != @map.show_height)
+          @texture = StarRuby::Texture.new(@map.show_width, @map.show_height)
+        end
+        @texture.fill(Color.new(0, 0, 0, 255))
         
-        @texture.clear
+        @map.update(self.w_count, self.h_count, @layers)
+
         @map.render(@texture, @layers[0])
+        
         if(@layers[1] == self.current_layer)
           @map.render(@texture, @layers[1])
         else
           @map.render(@texture, @layers[1], :alpha => 120)
         end
-        
-        #tw = [@scroll_box.content_width, @texture.width * @zoom].min
-        #th = [@scroll_box.content_height, @texture.height * @zoom].min
 
-        tw = @scroll_box.width
-        th = @scroll_box.height
-        
-        self.render_frame(@texture, self.scroll_x, self.scroll_y)
+        @frame.render(@texture, self.grid_size / @zoom, [@sx, @ex].min + self.scroll_w_count, [@sy, @ey].min + self.scroll_h_count, self.scroll_x, self.scroll_y)
 
-        @dst_texture = Texture.new(tw, th)
-        @dst_texture.render_texture(@texture, 0, 0, :scale_x => @zoom, :scale_y => @zoom, :src_width => [tw / @zoom, @texture.width].min, :src_height => [th / @zoom, @texture.height].min)
+        tw = @invalidate_area[:w_count] < 0 ? @scroll_box.width : @invalidate_area[:w_count] * self.grid_size
+        th = @invalidate_area[:h_count] < 0 ? @scroll_box.height : @invalidate_area[:h_count] * self.grid_size
+        tx = @invalidate_area[:sx] < 0 ? 0 : (@invalidate_area[:sx] - self.scroll_w_count) * @map.grid_size
+        ty = @invalidate_area[:sy] < 0 ? 0 : (@invalidate_area[:sy] - self.scroll_h_count) * @map.grid_size
+
+        if(@dst_texture.nil? || (@dst_texture.width != tw || @dst_texture.height != th))
+          @dst_texture = Texture.new(tw, th)
+        end
+        
+         if(tx < @texture.width && ty < @texture.height)
+          @dst_texture.render_texture(@texture, 0, 0, :scale_x => @zoom, :scale_y => @zoom, :src_x => tx, :src_y => ty, :src_width => [tw / @zoom, @texture.width - tx].min, :src_height => [th / @zoom, @texture.height - ty].min)
+         end
       end
 
       def render
         self.update_panel
-        return if @scroll_box.content_image.window.nil?
-
         area = @scroll_box.content_image
-        buf = Gdk::Pixbuf.new(@dst_texture.dump('rgb'), Gdk::Pixbuf::ColorSpace.new(Gdk::Pixbuf::ColorSpace::RGB), false, 8, @dst_texture.width, @dst_texture.height, @dst_texture.width * 3)
-        area.window.draw_pixbuf(area.style.fg_gc(area.state), buf, 0, 0, 0, 0, @dst_texture.width, @dst_texture.height, Gdk::RGB::DITHER_NONE, 0, 0)
+        return if area.window.nil?
 
+        # dst_x = @sx * self.grid_size
+        # dst_y = @sy * self.grid_size
+        dst_x = @invalidate_area[:sx] < 0 ? 0 : (@invalidate_area[:sx] - self.scroll_w_count) * self.grid_size
+        dst_y = @invalidate_area[:sy] < 0 ? 0 : (@invalidate_area[:sy] - self.scroll_h_count) * self.grid_size
+
+        tw = @dst_texture.width
+        th = @dst_texture.height
+
+        #if((dst_x + buf > @scroll
+        buf = Gdk::Pixbuf.new(@dst_texture.dump('rgb'), Gdk::Pixbuf::ColorSpace.new(Gdk::Pixbuf::ColorSpace::RGB), false, 8, tw, th, tw * 3)
+        gc = Gdk::GC.new(area.window) 
+        area.window.draw_pixbuf(gc, buf, 0, 0, dst_x, dst_y, buf.width, buf.height, Gdk::RGB::DITHER_NONE, 0, 0)
+ 
+        @psx = @sx
+        @psy = @sy
+        @pex = @ex
+        @pey = @ey
+        @pframe_width = @frame.width
+        @pframe_height = @frame.height
+        
+        @invalidate_area = {:sx => -1, :sy => -1, :w_count => -1, :h_count => -1}
+        
         #@scroll_box.content_image.window.cairo_create
         #@scroll_box.content_image.pixbuf = 
 
@@ -206,41 +254,42 @@ module Editor
         if @current_palet.active?
 
           @current_palet.each_chip_info do |id, tx, ty|
-            ttx = (tx - (sx - @draw_sx) % @current_palet.frame_w) % @current_palet.frame_w
-            tty = (ty - (sy - @draw_sy) % @current_palet.frame_h) % @current_palet.frame_h
+            ttx = (tx - (sx - @draw_sx) % @current_palet.frame.width) % @current_palet.frame.width
+            tty = (ty - (sy - @draw_sy) % @current_palet.frame.height) % @current_palet.frame.height
             if current_layer.map_data.exists?(sx + ttx, sy + tty)
               current_layer.map_data[sx + ttx, sy + tty].palet_chip = id
             end
           end
           
-          current_layer.update_complementary_data(sx - 1 - self.h_scroll_tiles, sy - 1 - self.v_scroll_tiles, sx - 1, sy - 1, 2 + @current_palet.frame_w, 2 + @current_palet.frame_h)
-          current_layer.render_new_part(sx - 1 - self.h_scroll_tiles, sy - 1 - self.v_scroll_tiles, sx - 1, sy - 1, 2 + @current_palet.frame_w, 2 + @current_palet.frame_h)
+          current_layer.update_complementary_data(sx - 1 - self.scroll_w_count, sy - 1 - self.scroll_h_count, sx - 1, sy - 1, 2 + @current_palet.frame.width, 2 + @current_palet.frame.height)
+          current_layer.render_new_part(sx - 1 - self.scroll_w_count, sy - 1 - self.scroll_h_count, sx - 1, sy - 1, 2 + @current_palet.frame.width, 2 + @current_palet.frame.height)
         else
+          #p "-----------------"
           @memory.each_with_two_index do |id, tx, ty|
-            ttx = (tx - (sx - @draw_sx) % self.frame_w) % self.frame_w
-            tty = (ty - (sy - @draw_sy) % self.frame_h) % self.frame_h
-            
+            ttx = (tx - (sx - @draw_sx) % @frame.width) % @frame.width
+            tty = (ty - (sy - @draw_sy) % @frame.height) % @frame.height
+            #p "chipNo #{id} ttx #{ttx}, tty #{tty} @frame.width #{@frame.width}"
             if current_layer.map_data.exists?(sx + ttx, sy + tty)
-              current_layer.map_data[sx + ttx, sy + tty].palet_chip = id.palet_chip
+              current_layer.map_data[sx + ttx, sy + tty].palet_chip = id
             end
           end
+          #p "-----------------"
           
-          current_layer.update_complementary_data(sx - 1 - self.h_scroll_tiles, sy - 1 - self.v_scroll_tiles, sx - 1, sy - 1, 2 + @memory.width, 2 + @memory.height)
-          current_layer.render_new_part(sx - 1 - self.h_scroll_tiles, sy - 1 - self.v_scroll_tiles, sx - 1, sy - 1, 2 + @memory.width, 2 + @memory.height)
+          current_layer.update_complementary_data(sx - 1 - self.scroll_w_count, sy - 1 - self.scroll_h_count, sx - 1, sy - 1, 2 + @memory.width, 2 + @memory.height)
+          current_layer.render_new_part(sx - 1 - self.scroll_w_count, sy - 1 - self.scroll_h_count, sx - 1, sy - 1, 2 + @memory.width, 2 + @memory.height)
         end
-        
-        self.render
     	end
     
       def set_default_frame(x, y)
         @sx, @sy = self.get_abs_location(x, y)
-        
+
         if @current_palet.active?
-          @ex = @sx + @current_palet.frame_w - 1
-          @ey = @sy + @current_palet.frame_h - 1
+          @ex = @sx + @current_palet.frame.width - 1
+          @ey = @sy + @current_palet.frame.height - 1
+          @frame.set_size(@current_palet.frame.width, @current_palet.frame.height)          
         else
-          @ex = @sx + @frame_w - 1
-          @ey = @sy + @frame_h - 1
+          @ex = @sx + @frame.width - 1
+          @ey = @sy + @frame.height - 1
         end
       end
       
@@ -272,6 +321,26 @@ module Editor
         return sx, sy
       end
       
+      def invalidate(auto, tx = 0, ty =0, tw = 0, th = 0)
+        if(auto)
+          if(@sx != @psx || @sy != @psy || @ex != @pex || @ey != @pey || @pframe_width != @frame.width || @pframe_height != @frame.height)
+            sx = [[@psx, self.scroll_w_count].max, @sx + tx, @ex + tx, self.scroll_w_count + self.w_count - 1].min
+            sy = [[@psy, self.scroll_h_count].max, @sy + ty, @ey + ty, self.scroll_h_count + self.h_count - 1].min
+            sw = [tw + @frame.width + (@sx - [@psx, 0].max).abs, self.scroll_w_count + self.w_count - sx].min
+            sh = [th + @frame.height + (@sy - @psy).abs, self.scroll_h_count + self.h_count - sy].min
+            
+            if(sx >= 0 && sy >= 0 && sw >= 1 && sh >= 1)
+              @invalidate_area = {:sx => sx, :sy => sy, :w_count => sw, :h_count => sh}
+              self.render
+            end
+            
+          end
+        else
+          @invalidate_area = {:sx => -1, :sy => -1, :w_count => -1, :h_count => -1}
+          self.render
+        end
+      end
+      
       #Events
       def on_left_down(event)
         @palets.each_with_index do |obj, i|
@@ -292,7 +361,10 @@ module Editor
         @p_sy = sy
         @draw_sx = sx
         @draw_sy = sy
+        
+        
         self.put_tile(sx, sy)
+        self.render
       end
 
       def on_left_up(event)
@@ -300,26 +372,37 @@ module Editor
       end
       
       def on_motion(event)
-      @mode = :put
-      
-      if @left_pressed
-        sx, sy = get_abs_location(event.x, event.y)
-        self.put_tile(sx, sy)
-      end
-      if @right_pressed
-        @mode = :select
+        @mode = :put
         
-        tx, ty = get_abs_location(event.x, event.y)
-        if self.current_layer.map_data.exists?(tx, ty)
-          @ex, @ey = tx, ty
+        tx = 0
+        ty = 0
+        tw = 0
+        th = 0
+        if @left_pressed
+          @sx, @sy = get_abs_location(event.x, event.y)
+          self.put_tile(@sx, @sy)
+          tx = -1
+          ty = -1
+          tw = 2
+          th = 2
         end
-      end
+        
+        if @right_pressed
+          @mode = :select
 
-      if @mode == :put
-        self.set_default_frame(event.x, event.y)
-      end
+          ttx, tty = get_abs_location(event.x, event.y)
+          if self.current_layer.map_data.exists?(ttx, tty)
+            @ex, @ey = ttx, tty
+          end
+          
+          @frame.set_size((@ex - @sx).abs + 1, (@ey - @sy).abs + 1)
+        end
 
-      self.render
+        if @mode == :put
+          self.set_default_frame(event.x, event.y)
+        end
+
+        self.invalidate(true, tx, ty, tw, th)
       end
         
       def on_right_down(e)
@@ -331,25 +414,33 @@ module Editor
         self.select(tx, ty)
         self.set_default_frame(e.x , e.y)
         @right_pressed = true
-        self.render
+        
+        @frame.set_size(1, 1)
+        self.invalidate(false)
       end
 
       def on_right_up(e)
+        @right_pressed = false
+        return if @mode != :select
+        
+        @frame.set_size((@ex - @sx).abs + 1, (@ey - @sy).abs + 1)
+        
         @mode = :put
         @memory = nil
-        unless self.frame_w == 1 && self.frame_h == 1
+        
+        unless @frame.width == 1 && @frame.height == 1
           arr = []
           (0 .. (@sy - @ey).abs).each do |ty|
             (0 .. (@sx - @ex).abs).each do |tx|
-              arr << current_layer.map_data[[@sx, @ex].min + tx, [@sy, @ey].min + ty]
+              arr << current_layer.map_data[[@sx, @ex].min + tx, [@sy, @ey].min + ty].palet_chip
             end
           end
 
           @memory = DLib::Table.new((@sx - @ex).abs + 1, arr)
           @palets.each{|palet|palet.active = false}
         end
-        @right_pressed = false
-        self.render
+
+        self.invalidate(false)
       end
 
       

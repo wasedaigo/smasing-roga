@@ -5,8 +5,7 @@ PALET_ROW_COUNT = 8
 module Editor
   module Map
     class PaletPanel < Gtk::VBox
-      include Frame
-      attr_reader :chip_id, :chipset
+      attr_reader :chip_id, :chipset, :frame
       attr_accessor :zoom, :active
       
       def initialize(palet_notebook, h)
@@ -16,12 +15,13 @@ module Editor
         
         self.set_height_request(h)
         
+        @mx = -1
+        @my = -1
         @sx = 0
         @sy = 0
         @ex = 0
         @ey = 0
         @zoom = 2
-        @frame_zoom = 2
 
         @scroll_box = Editor::ScrollBox.new(1, 1, self.grid_size) do |type|
           self.render
@@ -32,9 +32,8 @@ module Editor
         @chipset = nil
         @active = true
 
-        @frame_w = 0
-        @frame_h = 0
-        
+        @frame = Frame.new
+
         self.set_panel
         self.set_signals
         self.render
@@ -94,18 +93,27 @@ module Editor
         return @chipset.h_count
       end
       
+      def scroll_w_count
+        return @scroll_box.h_scrollbar.value.floor
+      end
+      
+      def scroll_h_count
+        return @scroll_box.v_scrollbar.value.floor
+      end
+      
       def scroll_x
-        return @scroll_box.h_scrollbar.value.floor * self.grid_size
+        return self.scroll_w_count * self.grid_size
       end
       
       def scroll_y
-        return @scroll_box.v_scrollbar.value.floor * self.grid_size  
+        return self.scroll_h_count * self.grid_size  
       end
-      
+
       #Standard Method
       def select(x, y)
         return if x >= @chipset.w_count || y >= @chipset.h_count
       
+        @frame.set_size(1, 1)
         @sx = x
         @sy = y
         @ex = @sx
@@ -128,19 +136,29 @@ module Editor
         return if @chipset.nil?
         return if @scroll_box.content_image.window.nil?
 
-        @dst_texture = Texture.new(@scroll_box.width, @scroll_box.height)
+        if(@dst_texture.nil? || (@dst_texture.width != @scroll_box.width || @dst_texture.height != @scroll_box.height))
+          @dst_texture = Texture.new(@scroll_box.width, @scroll_box.height)
+        end
+        @dst_texture.fill(Color.new(0, 0, 0, 255))
+        
+        if @texture == nil || (@texture.width != (@scroll_box.width / @zoom) || @texture.height != (@scroll_box.height / @zoom))
+          @texture = Texture.new(@scroll_box.width / @zoom, @scroll_box.height / @zoom)
+        end
+        @texture.fill(Color.new(0, 0, 0, 255))
+     
+        @chipset.render_sample(@texture, 0, 0, :src_x => self.scroll_x / @zoom, :src_y => self.scroll_y / @zoom)
+        @frame.render(@texture, self.grid_size / @zoom, [@sx, @ex].min + scroll_w_count, [@sy, @ey].min + scroll_h_count, self.scroll_x, self.scroll_y) if @active
+        @dst_texture.render_texture(@texture, 0, 0, :scale_x => @zoom, :scale_y => @zoom)
 
-        @chipset.render_sample(@dst_texture, 0, 0, :scale_x => @zoom, :scale_y => @zoom, :src_x => self.scroll_x / @zoom, :src_y => self.scroll_y / @zoom)
-        self.render_frame(@dst_texture, self.scroll_x * @frame_zoom, self.scroll_y * @frame_zoom) if @active
-
-        area = @scroll_box.content_image
         buf = Gdk::Pixbuf.new(@dst_texture.dump('rgb'), Gdk::Pixbuf::ColorSpace.new(Gdk::Pixbuf::ColorSpace::RGB), false, 8, @dst_texture.width, @dst_texture.height, @dst_texture.width * 3)
+        area = @scroll_box.content_image
         area.window.draw_pixbuf(area.style.fg_gc(area.state), buf, 0, 0, 0, 0, @dst_texture.width, @dst_texture.height, Gdk::RGB::DITHER_NONE, 0, 0)
         p
       end
 
       # Events
       def on_left_down(e)
+        @frame.set_size(1, 1)
         tx1 = self.scroll_x
         ty1 = self.scroll_y
         tx2 = ((e.x + self.scroll_x) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
@@ -158,10 +176,12 @@ module Editor
       end
 
       def on_right_down(e)
+        @frame.set_size(1, 1)
         @right_pressed = true
       end
 
       def on_right_up(e)
+        @frame.set_size((@ex - @sx).abs + 1, (@ey - @sy).abs + 1)
         @right_pressed = false
       end
 
@@ -173,6 +193,7 @@ module Editor
             @ex = ((e.x + self.scroll_x) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
             @ey = ((e.y + self.scroll_y) / (SRoga::Config::GRID_SIZE.to_f * @zoom)).floor
           end
+          @frame.set_size((@ex - @sx).abs + 1, (@ey - @sy).abs + 1)
         end
         
         self.render

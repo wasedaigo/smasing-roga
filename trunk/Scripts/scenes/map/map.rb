@@ -3,7 +3,7 @@ require  "scenes/map/config"
 
 module SRoga
   class Map
-    attr_reader :w_count, :h_count, :show_w_count, :show_h_count
+    attr_reader :w_count, :h_count, :show_w_count, :show_h_count, :grid_size
     attr_accessor :base_x,:base_y
 
     MIN = -999999999999
@@ -11,10 +11,11 @@ module SRoga
     # x and y should be less than 2^BIT
     BIT = 8
 
-    def initialize(w_count, h_count, show_w_count, show_h_count, collision_data)
+    def initialize(w_count, h_count, show_w_count, show_h_count, grid_size, collision_data)
       # size restriction
       raise raise("map size have to be less than 256 * 256") if (w_count >= (1 << BIT)) || (h_count >= (1 << BIT))
 
+      @grid_size = grid_size
       @collision_data = collision_data
 
       @object_collisions = Hash.new
@@ -77,11 +78,19 @@ module SRoga
     # Map
     #
     def width
-      Config::GRID_SIZE * @w_count
+      @grid_size * @w_count
     end
 
     def height
-      Config::GRID_SIZE * @h_count
+      @grid_size * @h_count
+    end
+    
+    def show_width
+      @grid_size * @show_w_count
+    end
+
+    def show_height
+      @grid_size * @show_h_count
     end
 
     def obstacle?(x, y, dir)
@@ -93,7 +102,7 @@ module SRoga
         return data & dir != 0
       end
     end
-    
+
     def set_size(w_count, h_count, layers)
       if @w_count == w_count && @h_count == h_count
         return
@@ -120,18 +129,21 @@ module SRoga
       end
     end
     
-    def update(show_width, show_height, layers)
+    def update(show_w_count, show_h_count, layers)
       # Render Start Position Top Left
-      sx = (@base_x/Config::GRID_SIZE).floor
-      sy = (@base_y/Config::GRID_SIZE).floor
+      sx = (@base_x/@grid_size).floor
+      sy = (@base_y/@grid_size).floor
       
       # Render grid size
-      w = (show_width/Config::GRID_SIZE).floor
-      h = (show_height/Config::GRID_SIZE).floor
-
+      w = show_w_count#(show_width/@grid_size).floor
+      h = show_h_count#(show_height/@grid_size).floor
+      
+      # w = @show_w_count
+      # h = @show_h_count
+      
       # Render Delta
-      @dx = @base_x.floor % Config::GRID_SIZE
-      @dy = @base_y.floor % Config::GRID_SIZE
+      @dx = @base_x.floor % @grid_size
+      @dy = @base_y.floor % @grid_size
 
       if sx<0
         sx = 0

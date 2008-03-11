@@ -1,18 +1,23 @@
-module Frame
-    def frame_w
-      return (@ex - @sx).abs + 1
+class Frame
+    attr_reader :width, :height
+
+    def initialize
+      @width = 1
+      @height = 1
     end
     
-    def frame_h
-      return (@ey - @sy).abs + 1
+    def set_size(w, h)
+      @width = w
+      @height = h
     end
     
-    def select_frame
-      unless @frame_w == self.frame_w && @frame_h == self.frame_h
-        @frame_w = self.frame_w
-        @frame_h = self.frame_h
-        tw = self.frame_w * SRoga::Config::GRID_SIZE
-        th = self.frame_h * SRoga::Config::GRID_SIZE
+    def select_frame(grid_size)
+      unless @w == self.width && @h == self.height
+        @w = self.width
+        @h = self.height
+        
+        tw = self.width * grid_size
+        th = self.height * grid_size
 
         @select_frame = Texture.new(tw, th)
         @select_frame.fill_rect(0, 0, tw, th, Color.new(0, 0, 0, 255))
@@ -22,15 +27,13 @@ module Frame
       end
       return @select_frame
     end
-    
-    def render_frame(s, dx = 0, dy = 0)
+
+    def render(s, grid_size, x, y, dx = 0, dy = 0)
       s.render_texture(
-        self.select_frame, 
-        [@sx, @ex].min * SRoga::Config::GRID_SIZE * @frame_zoom - dx / @zoom, 
-        [@sy, @ey].min * SRoga::Config::GRID_SIZE * @frame_zoom - dy / @zoom, 
-        :alpha => 150, 
-        :scale_x => @frame_zoom, 
-        :scale_y => @frame_zoom
+        self.select_frame(grid_size), 
+        x * grid_size - dx, 
+        y * grid_size - dy, 
+        :alpha => 150
       )
     end
 end

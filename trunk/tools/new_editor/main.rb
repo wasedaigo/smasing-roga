@@ -59,12 +59,7 @@ class Main
 
   def create_toolbar
     toolbar = Gtk::Toolbar.new
-    toolbar.append("Horizontal", "Horizontal toolbar layout",
-       "Toolbar/Horizontal", Gtk::Image.new("test.xpm")){}
 
-    toolbar.append("Vertical", "Vertical toolbar layout",
-       "Toolbar/Vertical", Gtk::Image.new("test.xpm")){}
-       
     toolbar.append("ZoomIn", "ZoomIn",
        "Toolbar/Vertical", Gtk::Image.new("test.xpm")){
       @main_container.map_panel.zoom_in
