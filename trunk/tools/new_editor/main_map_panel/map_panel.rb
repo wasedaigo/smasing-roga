@@ -21,7 +21,7 @@ module Editor
         @tile_w_count = data[:w_count]
         @tile_h_count = data[:h_count]
 
-        @zoom_index = 2
+        @zoom_index = 1
         @zoom = ZOOMS[@zoom_index]
      
         @map = SRoga::Map.new(@tile_w_count, @tile_h_count, 40, 40, SRoga::Config::GRID_SIZE, data[:collision_data])
@@ -45,8 +45,6 @@ module Editor
         
         @left_pressed = false
         @right_pressed = false
-        @p_sx = -1
-        @p_sy = -1
         
         @psx = -1
         @psy = -1
@@ -185,18 +183,18 @@ module Editor
         else
           @map.render(@texture, @layers[1], :alpha => 120)
         end
-
-        @frame.render(@texture, self.grid_size / @zoom, [@sx, @ex].min + self.scroll_w_count, [@sy, @ey].min + self.scroll_h_count, self.scroll_x, self.scroll_y)
+        @frame.render(@texture, self.grid_size / @zoom, [@sx, @ex].min - self.scroll_w_count, [@sy, @ey].min - self.scroll_h_count)
 
         tw = @invalidate_area[:w_count] < 0 ? @scroll_box.width : @invalidate_area[:w_count] * self.grid_size
         th = @invalidate_area[:h_count] < 0 ? @scroll_box.height : @invalidate_area[:h_count] * self.grid_size
-        tx = @invalidate_area[:sx] < 0 ? 0 : (@invalidate_area[:sx] - self.scroll_w_count) * @map.grid_size
-        ty = @invalidate_area[:sy] < 0 ? 0 : (@invalidate_area[:sy] - self.scroll_h_count) * @map.grid_size
 
         if(@dst_texture.nil? || (@dst_texture.width != tw || @dst_texture.height != th))
           @dst_texture = Texture.new(tw, th)
         end
         
+        tx = @invalidate_area[:sx] < 0 ? 0 : [(@invalidate_area[:sx] - self.scroll_w_count) * @map.grid_size, 0].max
+        ty = @invalidate_area[:sy] < 0 ? 0 : [(@invalidate_area[:sy] - self.scroll_h_count) * @map.grid_size, 0].max
+
          if(tx < @texture.width && ty < @texture.height)
           @dst_texture.render_texture(@texture, 0, 0, :scale_x => @zoom, :scale_y => @zoom, :src_x => tx, :src_y => ty, :src_width => [tw / @zoom, @texture.width - tx].min, :src_height => [th / @zoom, @texture.height - ty].min)
          end
@@ -315,20 +313,48 @@ module Editor
         end
       end
  
-      def get_abs_location(x, y)
-        sx = ((x + self.scroll_x) / self.grid_size.to_f).floor
-        sy = ((y + self.scroll_y) / self.grid_size.to_f).floor
+      def get_abs_location(x, y , b = true)
+        sx = (([x, 0].max + self.scroll_x) / self.grid_size.to_f).floor
+        sy = (([y, 0].max + self.scroll_y) / self.grid_size.to_f).floor
+        
+        if(b)
+          sx = [sx, self.scroll_w_count + self.w_count - @frame.width].min
+          sy = [sy, self.scroll_h_count + self.h_count - @frame.height].min
+        end
         return sx, sy
       end
       
       def invalidate(auto, tx = 0, ty =0, tw = 0, th = 0)
         if(auto)
-          if(@sx != @psx || @sy != @psy || @ex != @pex || @ey != @pey || @pframe_width != @frame.width || @pframe_height != @frame.height)
-            sx = [[@psx, self.scroll_w_count].max, @sx + tx, @ex + tx, self.scroll_w_count + self.w_count - 1].min
-            sy = [[@psy, self.scroll_h_count].max, @sy + ty, @ey + ty, self.scroll_h_count + self.h_count - 1].min
-            sw = [tw + @frame.width + (@sx - [@psx, 0].max).abs, self.scroll_w_count + self.w_count - sx].min
-            sh = [th + @frame.height + (@sy - @psy).abs, self.scroll_h_count + self.h_count - sy].min
+ 
+          p "ty #{ty} sy #{@sy} psy#{@psy}"
+          if((@sx != @psx) || (@sy != @psy) || (@ex != @pex) || (@ey != @pey) || (@pframe_width != @frame.width) || (@pframe_height != @frame.height))
+            @psx = @sx if(@psx < 0)
+            @psy = @sy if(@psy < 0)
+           
+            # sx = [[@psx, self.scroll_w_count].max, [@sx, @ex].min + tx, self.scroll_w_count + self.w_count - 1].min
+            # sy = [[@psy, self.scroll_h_count].max, [@sy, @ey].min + ty, self.scroll_h_count + self.h_count - 1].min
+            # sw = [tw + @frame.width + (@sx - [@psx, 0].max).abs, self.scroll_w_count + self.w_count - sx].min
+            # sh = [th + @frame.height + (@sy - @psy).abs, self.scroll_h_count + self.h_count - sy].min
+
+            # if(sx < 0)
+              # sw += sx
+              # sx = 0
+            # end
+            # if(sy < 0)
+              # sh += sy
+              # sy = 0
+            # end
+          
+            sx = tx + [@psx, @pex, @sx, @ex].min
+            sy = ty + [@psy, @pey, @sy, @ey].min          
+            ex = tw + [[@psx, @pex].min + @pframe_width, [@sx, @ex].min + @frame.width].max
+            ey = th + [[@psy, @pey].min + @pframe_height, [@sy, @ey].min + @frame.height].max
+
+            sw = ex - sx
+            sh = ey - sy
             
+            p "@sx#{@sx} sx:#{sx} sy:#{sy} sw#{sw} sh:#{sh}, a#{self.scroll_h_count + self.h_count - sy}"
             if(sx >= 0 && sy >= 0 && sw >= 1 && sh >= 1)
               @invalidate_area = {:sx => sx, :sy => sy, :w_count => sw, :h_count => sh}
               self.render
@@ -350,21 +376,18 @@ module Editor
           end
         end
 
-        sx, sy = get_abs_location(event.x, event.y)
+        @psx = -1
+        @psy = -1
+        @sx, @sy = get_abs_location(event.x, event.y)
+        @ex, @ey = @sx, @sy
         
         @left_pressed = true
-        if @p_sx == sx && @p_sy == sy
-          return
-        end
+
+        @draw_sx = @sx
+        @draw_sy = @sy
         
-        @p_sx = sx
-        @p_sy = sy
-        @draw_sx = sx
-        @draw_sy = sy
-        
-        
-        self.put_tile(sx, sy)
-        self.render
+        self.put_tile(@sx, @sy)
+        self.invalidate(true, -1, -1, 2, 2)
       end
 
       def on_left_up(event)
@@ -390,11 +413,14 @@ module Editor
         if @right_pressed
           @mode = :select
 
-          ttx, tty = get_abs_location(event.x, event.y)
+          ttx, tty = get_abs_location(event.x, event.y, false)
           if self.current_layer.map_data.exists?(ttx, tty)
             @ex, @ey = ttx, tty
           end
-          
+
+          @ex = [@ex, self.scroll_w_count + self.w_count - 1].min
+          @ey = [@ey, self.scroll_h_count + self.h_count - 1].min
+
           @frame.set_size((@ex - @sx).abs + 1, (@ey - @sy).abs + 1)
         end
 

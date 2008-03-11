@@ -31,8 +31,8 @@ class Frame
     def render(s, grid_size, x, y, dx = 0, dy = 0)
       s.render_texture(
         self.select_frame(grid_size), 
-        x * grid_size - dx, 
-        y * grid_size - dy, 
+        x * grid_size, 
+        y * grid_size, 
         :alpha => 150
       )
     end
