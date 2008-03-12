@@ -1,3 +1,4 @@
+$LOAD_PATH << "dll"
 $LOAD_PATH << "../../Scripts/"
 $data_path = "../../"
 

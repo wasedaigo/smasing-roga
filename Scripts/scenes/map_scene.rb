@@ -141,9 +141,9 @@ class MapScene
     end
 
     #Choose Focus Object which you want to make as the center of the screen
-    self.caliculateBase @player.x, @player.y
+    self.caliculateBase(@player.x, @player.y)
 
-    @map.update @showWidth , @showHeight, [@bottom_layer, @top_layer]
+    @map.update(@map.show_w_count , @map.show_h_count, [@bottom_layer, @top_layer])
     @window.update(@player.centerX - @map.base_x, @player.renderY - @map.base_y, @showWidth , @showHeight)
 
     # back to title
