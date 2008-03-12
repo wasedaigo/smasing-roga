@@ -28,11 +28,17 @@ module Editor
         @layers = [SRoga::MapLayer.new(@map, data[:bottom_layer]), SRoga::MapLayer.new(@map, data[:top_layer])]
 
         @scroll_box = Editor::ScrollBox.new(@tile_w_count * self.grid_size, @tile_h_count * self.grid_size, self.grid_size) do |type|
+          @sx = -1
+          @sy = -1
+          @ex = -1
+          @ey = -1
           case type
             when "resize":
               @map.set_show_size(@scroll_box.w_grid_count, @scroll_box.h_grid_count, @layers)
+              @invalidate_area = {:sx => -1, :sy => -1, :w_count => -1, :h_count => -1}
               self.render
             when "render"
+              @invalidate_area = {:sx => -1, :sy => -1, :w_count => -1, :h_count => -1}
               self.render
           end
         end
@@ -326,37 +332,36 @@ module Editor
       
       def invalidate(auto, tx = 0, ty =0, tw = 0, th = 0)
         if(auto)
- 
-          p "ty #{ty} sy #{@sy} psy#{@psy}"
+        
           if((@sx != @psx) || (@sy != @psy) || (@ex != @pex) || (@ey != @pey) || (@pframe_width != @frame.width) || (@pframe_height != @frame.height))
             @psx = @sx if(@psx < 0)
             @psy = @sy if(@psy < 0)
-           
-            # sx = [[@psx, self.scroll_w_count].max, [@sx, @ex].min + tx, self.scroll_w_count + self.w_count - 1].min
-            # sy = [[@psy, self.scroll_h_count].max, [@sy, @ey].min + ty, self.scroll_h_count + self.h_count - 1].min
-            # sw = [tw + @frame.width + (@sx - [@psx, 0].max).abs, self.scroll_w_count + self.w_count - sx].min
-            # sh = [th + @frame.height + (@sy - @psy).abs, self.scroll_h_count + self.h_count - sy].min
-
-            # if(sx < 0)
-              # sw += sx
-              # sx = 0
-            # end
-            # if(sy < 0)
-              # sh += sy
-              # sy = 0
-            # end
-          
-            sx = tx + [@psx, @pex, @sx, @ex].min
-            sy = ty + [@psy, @pey, @sy, @ey].min          
-            ex = tw + [[@psx, @pex].min + @pframe_width, [@sx, @ex].min + @frame.width].max
-            ey = th + [[@psy, @pey].min + @pframe_height, [@sy, @ey].min + @frame.height].max
-
-            sw = ex - sx
-            sh = ey - sy
+            @pex = @ex if(@pex < 0)
+            @pey = @ey if(@pey < 0)
             
-            p "@sx#{@sx} sx:#{sx} sy:#{sy} sw#{sw} sh:#{sh}, a#{self.scroll_h_count + self.h_count - sy}"
-            if(sx >= 0 && sy >= 0 && sw >= 1 && sh >= 1)
-              @invalidate_area = {:sx => sx, :sy => sy, :w_count => sw, :h_count => sh}
+            sx = [@sx, @ex].min
+            sy = [@sy, @ey].min
+            sx = [sx + tx, self.scroll_w_count].max
+            sy = [sy + ty, self.scroll_h_count].max
+            
+            psx = [@psx, @pex].min
+            psy = [@psy, @pey].min
+            psx = [psx + tx, self.scroll_w_count].max
+            psy = [psy + ty, self.scroll_h_count].max
+            
+            tsx = [psx, sx].min
+            tsy = [psy, sy].min          
+            tex = tw + [psx + @pframe_width, sx + @frame.width].max
+            tey = th + [psy + @pframe_height, sy + @frame.height].max
+            tex = [tex, self.scroll_w_count + self.w_count].min
+            tey = [tey, self.scroll_h_count + self.h_count].min
+            
+            tsw = tex - tsx
+            tsh = tey - tsy
+
+            p "tsx:#{tsx} tsy:#{tsy} tex:#{tex} tey:#{tey} tsw#{tsw} tsh:#{tsh} psx#{psx}"
+            if(tsx >= 0 && tsy >= 0 && tsw >= 1 && tsh >= 1)
+              @invalidate_area = {:sx => tsx, :sy => tsy, :w_count => tsw, :h_count => tsh}
               self.render
             end
             

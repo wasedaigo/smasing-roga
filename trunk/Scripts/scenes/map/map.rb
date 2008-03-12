@@ -133,7 +133,7 @@ module SRoga
       # Render Start Position Top Left
       sx = (@base_x/@grid_size).floor
       sy = (@base_y/@grid_size).floor
-      
+
       # Render grid size
       w = show_w_count#(show_width/@grid_size).floor
       h = show_h_count#(show_height/@grid_size).floor
