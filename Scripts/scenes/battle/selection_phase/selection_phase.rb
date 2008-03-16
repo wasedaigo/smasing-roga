@@ -93,7 +93,6 @@ class SelectionPhase
   end
   
   def show_next_command_menu(obj = nil)
-
     @selected_menu_index += 1
     if @selected_menu_index >= 1
     
