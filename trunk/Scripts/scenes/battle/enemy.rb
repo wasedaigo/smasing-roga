@@ -19,7 +19,6 @@ class Enemy < Unit
         @icon_texture.render_texture($res.get_texture("font"), 7, 8, :src_x => 9 * no, :src_width => 9, :src_height => 9)
     end
     self.update  
-    self.initialize_wait(40)
   end
 
   def actable?

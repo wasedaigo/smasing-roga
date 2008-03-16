@@ -18,7 +18,7 @@ class BattlerMap
     @battler_list = battler_list
     @grid_width = grid_width + @space
     @grid_height = grid_height + @space
-    @map_data = Table.new(w_count, Array.new(w_count * h_count))
+    @map_data = DLib::Table.new(w_count, Array.new(w_count * h_count))
     @map_data.each_with_two_index do |obj, i, j|
       @map_data[i, j] = BattlerTile.new(base, self, i, j, @grid_width, @grid_height)
     end
