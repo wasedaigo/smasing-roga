@@ -39,7 +39,7 @@ class Unit
     end
   end
   
-  def render(s)
-    s.render_texture(@texture, @x, @y, :src_width => 16, :src_height => 16, :src_x => @current_frame * 16, :src_y => @dir * 16)
+  def render(s, dx, dy)
+    s.render_texture(@texture, @x + dx, @y + dy, :src_width => 16, :src_height => 16, :src_x => @current_frame * 16, :src_y => @dir * 16)
   end
 end

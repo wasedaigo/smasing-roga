@@ -36,10 +36,8 @@ class Cursor
     end
   end
   
-  def isometric_mouse_location
+  def isometric_mouse_location(x, y)
     
-    x, y = Input.mouse_location
-
     dx, dy = self.detailed_tile_location(x, y)
 
     tx, ty = self.convert_screen_coordinate_to_isometric_coordinate((x / @map.grid_width) - @map.center, (y / @map.grid_height))
@@ -52,7 +50,8 @@ class Cursor
   end
 
   def render(s)
-    x, y = self.isometric_mouse_location
+    x, y = Input.mouse_location
+    x, y = self.isometric_mouse_location(x, y)
     s.render_texture(@texture, @map.center * @map.grid_width - x * (@map.grid_width / 2) + y * (@map.grid_width / 2) , x * (@map.grid_height/2) + y * (@map.grid_height/2))
     
     x, y = Input.mouse_location

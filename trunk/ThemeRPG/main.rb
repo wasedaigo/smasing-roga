@@ -11,7 +11,7 @@ SCREEN_WIDTH = 320
 SCREEN_HEIGHT = 240
 
 Game.title = "Theme RPG"
-Game.fps = 3000
+Game.fps = 30
 
 
 map = Map.new
@@ -24,11 +24,13 @@ unit = Unit.new(100, 100)
 Game.run(SCREEN_WIDTH, SCREEN_HEIGHT, :window_scale => 2) do
   Game.screen.clear
 
+  x, y = Input.mouse_location
+
   map.update
   unit.update
   
   map.render(Game.screen)
-  unit.render(Game.screen)
+  unit.render(Game.screen, map.scroll_x, map.scroll_y)
   $cursor.render(Game.screen)
   
   Game.screen.render_text(Game.real_fps.to_s, 20, 20, DEFAULT_FONT, Color.new(255, 255, 255))
