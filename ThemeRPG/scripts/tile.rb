@@ -14,7 +14,7 @@ class Tile
     @no = 6
     @x = x
     @y = y
-    @draw_x = @map.center * @map.grid_width - @x * (@map.grid_width / 2) + @y * (@map.grid_width / 2)
+    @draw_x = 0 - @x * (@map.grid_width / 2) + @y * (@map.grid_width / 2)
     @draw_y = @x * (@map.grid_height / 2) + @y * (@map.grid_height / 2)
     @adds = []
   end
@@ -117,11 +117,11 @@ class Tile
     return @adds
   end
   
-  def render(s)
+  def render(s, dx, dy)
     s.render_texture(
       @texture, 
-      @draw_x, 
-      @draw_y, 
+      @draw_x + dx, 
+      @draw_y + dy, 
       :src_width => @map.grid_width, 
       :src_height => @map.grid_height, 
       :src_x => @no * @map.grid_width, 
@@ -132,14 +132,14 @@ class Tile
     )
   end
   
-  def render_adds(s)
+  def render_adds(s, dx, dy)
     @adds.each do |item|
       case item
         when :top
           s.render_texture(
             @texture, 
-            @draw_x + 14, 
-            @draw_y, 
+            @draw_x + dx + 14, 
+            @draw_y + dy, 
             :src_width => 4, 
             :src_height => 2, 
             :src_x => 7 * @map.grid_width + 14
@@ -147,8 +147,8 @@ class Tile
         when :right
           s.render_texture(
             @texture, 
-            @draw_x + 30, 
-            @draw_y + 6, 
+            @draw_x + dx + 30, 
+            @draw_y + dy + 6, 
             :src_width => 2, 
             :src_height => 4, 
             :src_x => 7 * @map.grid_width + 30,
@@ -157,8 +157,8 @@ class Tile
         when :bottom
           s.render_texture(
             @texture, 
-            @draw_x + 14, 
-            @draw_y + 14, 
+            @draw_x + dx + 14, 
+            @draw_y + dy + 14, 
             :src_width => 4, 
             :src_height => 2, 
             :src_x => 7 * @map.grid_width + 14,
@@ -167,8 +167,8 @@ class Tile
         when :left
           s.render_texture(
             @texture, 
-            @draw_x, 
-            @draw_y + 6, 
+            @draw_x + dx, 
+            @draw_y + dy + 6, 
             :src_width => 2, 
             :src_height => 4, 
             :src_x => 7 * @map.grid_width,
