@@ -43,7 +43,7 @@
 			this.jumpPower = 10;
 			this.jumpBoost = 0;
 			this.speed = 5;
-			this.sprite = new Sprite(new Point(100, GROUND_LINE), new Rectangle(0, 0, 64, 80), Graphics.getBitmapData(Graphics.BattlerSample));
+			this.sprite = new Sprite(new Point(100, GROUND_LINE), new Rectangle(0, 0, 32, 32), Graphics.getBitmapData(Graphics.BattlerSample));
 		}
 		
 		public function update():void {

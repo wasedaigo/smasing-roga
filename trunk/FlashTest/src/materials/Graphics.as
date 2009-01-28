@@ -22,9 +22,7 @@
 		
 		[Embed(source='../../res/images/play/sample_battle.png')]
         public static var BattlerSample:Class;
-		
-		[Embed(source='../../res/images/play/shirou_battle.png')]
-        public static var ShirouBattle:Class;
+
 	}
 	
 }
