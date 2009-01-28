@@ -1,7 +1,7 @@
 require "scenes/transition_scene"
 require "scenes/map_scene"
 require "scenes/battle_scene"
-require "lib/gadgets/menu_window"
+require "dgo/gadgets/menu_window"
 
 require "scenes/transitionable"
 include Transitionable

@@ -8,9 +8,9 @@ require  "scenes/map/collision_type"
 require  "scenes/map/character_speed_type"
 require  "scenes/map/map_loader"
 require  "scenes/map/config"
-require  "lib/gadgets/baloon_message_window"
-require  "lib/table"
-require  "d_input"
+require  "dgo/gadgets/baloon_message_window"
+require  "dgo/table"
+require  "simple_input"
 
 require "scenes/transitionable"
 include Transitionable
@@ -122,7 +122,7 @@ class MapScene
       else
         t = []
         [:left, :right, :up, :down].each do |key|
-          t << key if DInput.pressed? key
+          t << key if SimpleInput.pressed? key
         end
         obj.set_movement t
       end
@@ -147,7 +147,7 @@ class MapScene
     @window.update(@player.centerX - @map.base_x, @player.renderY - @map.base_y, @showWidth , @showHeight)
 
     # back to title
-    stack.pop if DInput.pressed? :cancel
+    stack.pop if SimpleInput.pressed? :cancel
   end
 
   def zoom(s, zoom)

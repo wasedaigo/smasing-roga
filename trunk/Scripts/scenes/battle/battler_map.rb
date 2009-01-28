@@ -1,11 +1,11 @@
-require  "lib/table"
-require  "lib/interval/interval_lib"
+require  "dgo/table/table"
+require  "dgo/interval/interval_lib"
 require  "scenes/battle/battler_tile"
 
 class BattlerMap
   attr_reader :grid_width, :grid_height, :map_data, :offset_x, :offset_y, :w_count, :h_count
   attr_accessor :x, :y,:alpha, :tone
-
+  include DGO::Table
   def initialize(base, x, y, w_count, h_count, grid_width, grid_height, space, offset_x, offset_y, battler_list)
     @base = base
     @x = x
@@ -18,7 +18,7 @@ class BattlerMap
     @battler_list = battler_list
     @grid_width = grid_width + @space
     @grid_height = grid_height + @space
-    @map_data = DLib::Table.new(w_count, Array.new(w_count * h_count))
+    @map_data = Table.new(w_count, Array.new(w_count * h_count))
     @map_data.each_with_two_index do |obj, i, j|
       @map_data[i, j] = BattlerTile.new(base, self, i, j, @grid_width, @grid_height)
     end

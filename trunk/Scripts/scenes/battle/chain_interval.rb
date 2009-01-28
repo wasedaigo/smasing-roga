@@ -1,6 +1,6 @@
-require "lib/interval/sequence"
-require "lib/interval/func"
-require "lib/interval/wait"
+require "dgo/interval/sequence"
+require "dgo/interval/func"
+require "dgo/interval/wait"
 module Interval
   class ChainInterval
     attr_accessor :duration

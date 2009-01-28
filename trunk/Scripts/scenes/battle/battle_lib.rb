@@ -1,24 +1,25 @@
-require  "lib/gadgets/baloon_message_window"
-require  "lib/graphics/sprite"
-include Graphics
+require  "dgo/gadgets/baloon_message_window"
+require  "dgo/graphics/sprite"
 
-require  "lib/interval/sequence"
-require  "lib/interval/lerp"
-include Interval
+
+require  "dgo/interval/sequence"
+require  "dgo/interval/lerp"
 
 class BattleLib
   attr_accessor :font
   @font = $font
-  
+  include DGO::Interval
+  include DGO::Gadgets
+  include DGO::Graphics
   # a window shows up before battlers' action
   def self.get_skill_window(name, unit)
-    w, h = BaloonMessageWindow::FONT.get_size(name)
+    w, h = FONT.get_size(name)
     
     case unit.group
       when :battler
-        return BaloonMessageWindow.new(unit.x, unit.y, w, h, name, :x_fixed => :right, :y_fixed => :down)
+        return BaloonMessageWindow.new(unit.x, unit.y, w, h, FONT, nil, $res.get_texture("window/baloon_window"), [name], :x_fixed => :right, :y_fixed => :down)
       when :enemy
-        return BaloonMessageWindow.new(unit.x + unit.width, unit.y, w, h, name, :x_fixed => :left, :y_fixed => :down)
+        return BaloonMessageWindow.new(unit.x + unit.width, unit.y, w, h, FONT, nil, $res.get_texture("window/baloon_window"), [name], :x_fixed => :left, :y_fixed => :down)
       else
         raise("case #{unit.group} is not defined yet")
     end
@@ -27,10 +28,10 @@ class BattleLib
   # blink the target
   def self.get_target_blink_interval(target, time, start_tone, end_tone, loop = false)
     return Parallel.new(
-            Interval.get_blink_interval(time, start_tone[:tone_red], end_tone[:tone_red], loop) { |value| target.tone[:tone_red] = value},
-            Interval.get_blink_interval(time, start_tone[:tone_green], end_tone[:tone_green], loop) { |value| target.tone[:tone_green] = value},
-            Interval.get_blink_interval(time, start_tone[:tone_blue], end_tone[:tone_blue], loop) { |value| target.tone[:tone_blue] = value},
-            Interval.get_blink_interval(time, start_tone[:saturation], end_tone[:saturation], loop) { |value| target.tone[:saturation] = value}
+            DGO::Interval.get_blink_interval(time, start_tone[:tone_red], end_tone[:tone_red], loop) { |value| target.tone[:tone_red] = value},
+            DGO::Interval.get_blink_interval(time, start_tone[:tone_green], end_tone[:tone_green], loop) { |value| target.tone[:tone_green] = value},
+            DGO::Interval.get_blink_interval(time, start_tone[:tone_blue], end_tone[:tone_blue], loop) { |value| target.tone[:tone_blue] = value},
+            DGO::Interval.get_blink_interval(time, start_tone[:saturation], end_tone[:saturation], loop) { |value| target.tone[:saturation] = value}
            )
   end
   

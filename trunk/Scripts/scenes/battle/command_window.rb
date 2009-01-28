@@ -1,9 +1,9 @@
-require "lib/interval/func"
-require "lib/interval/lerp"
-require "lib/interval/sequence"
+require "dgo/interval/func"
+require "dgo/interval/lerp"
+require "dgo/interval/sequence"
 require "scenes/battle/icon"
-require "lib/interval/interval_runner"
-include Interval
+require "dgo/interval/interval_runner"
+include DGO::Interval
 
 class CommandWindow
   attr_accessor :alpha, :tone
@@ -114,15 +114,17 @@ class CommandWindow
     return unless @controlable
     
     if self.get_command_type(@index) != :unselectable
-      if DInput.pressed_newly?(:ok)
-        @close_interval = self.close_frame_interval
-        $res.play_se("ok")
-        yield :type => :ok, :value => @index
+      if SimpleInput.pressed_newly?(:ok)
+        if self.selected_item.usable?(@unit.grid_x)
+          @close_interval = self.close_frame_interval
+          $res.play_se("ok")
+          yield :type => :ok, :value => @index
+        end
         return
       end
     end
     
-    if DInput.pressed_newly?(:cancel) && @options[:selection_mode] == :all_selectable
+    if SimpleInput.pressed_newly?(:cancel) && @options[:selection_mode] == :all_selectable
        $res.play_se("cancel")
       if @unit.full_hand?
         @close_interval = Sequence.new(self.discard_command_interval, self.close_frame_interval)
@@ -134,15 +136,15 @@ class CommandWindow
     end
   
     [:left, :right].each do |value|
-      if DInput.pressed_repeating?(value)
+      if SimpleInput.pressed_repeating?(value)
         yield :type => value, :value => @index
         return
       end
     end
 
     t = 0
-    t = 1 if DInput.pressed_repeating?(:down)
-    t = -1 if DInput.pressed_repeating?(:up)
+    t = 1 if SimpleInput.pressed_repeating?(:down)
+    t = -1 if SimpleInput.pressed_repeating?(:up)
     t = [[@index + t, @commands.size - 1].min, 0].max
     if t != @index
       $res.play_se("cursor")
@@ -160,12 +162,12 @@ class CommandWindow
    
   def command_texture(no)
       type = self.get_command_type(no)
+      
       if @command_textures.nil?
         @command_textures = {}
       end
       if @command_textures[no].nil?
         obj = @commands[no][:command]
-        
         
         @command_textures[no] = {}
         
@@ -240,7 +242,7 @@ class CommandWindow
   
   def get_command_type(no)
       return :unselectable if @options[:selection_mode] == :all_unselectable
-      if @options[:selection_mode] == :chain_skill_selectable && @commands[no][:command].group != :attack
+      if (@unit.group == :battler && !@commands[no][:command].usable?(@unit.grid_x))|| (@options[:selection_mode] == :chain_skill_selectable && @commands[no][:command].group != :attack)
         return :unselectable
       end
       return :default

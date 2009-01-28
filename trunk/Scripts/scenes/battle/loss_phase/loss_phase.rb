@@ -1,4 +1,4 @@
-require  "d_input"
+require  "simple_input"
 
 class LossPhase
   def initialize(base)

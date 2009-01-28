@@ -4,14 +4,14 @@ require  "scenes/battle/loss_phase/loss_phase"
 require  "scenes/battle/victory_phase/victory_phase"
 require  "scenes/battle/targets/battler_target"
 require  "scenes/battle/targets/rectangle_tile_target"
-require "lib/interval/sequence"
-require "lib/interval/wait"
-require "lib/interval/func"
-require "lib/interval/Parallel"
-require "lib/interval/interval_runner"
-require "lib/target_object"
-require "d_input"
-include Interval
+require "dgo/interval/sequence"
+require "dgo/interval/wait"
+require "dgo/interval/func"
+require "dgo/interval/Parallel"
+require "dgo/interval/interval_runner"
+require "dgo/target_object"
+require "simple_input"
+include DGO::Interval
 
 class BattlePhase
   def initialize(base)
@@ -53,7 +53,7 @@ class BattlePhase
                     )
   
       interval =  Sequence.new(
-                    action[:command].get_before_action_interval(action[:unit], action[:targets]),
+                    action[:command].get_before_action_interval(action[:unit], action[:targets], action[:command].target.get_effect_targets(@base, action[:unit], action[:targets])),
                     Func.new{self.push_action(t_interval)}
                   )
                   

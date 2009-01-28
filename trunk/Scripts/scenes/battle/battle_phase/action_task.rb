@@ -1,5 +1,5 @@
-require "lib/interval/interval_runner"
-include Interval
+require "dgo/interval/interval_runner"
+include DGO::Interval
 
 class ActionTask
   def initialize(interval)

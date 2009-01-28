@@ -1,6 +1,6 @@
-require "lib/interval/lerp"
-require "lib/interval/interval_runner"
-include Interval
+require "dgo/interval/lerp"
+require "dgo/interval/interval_runner"
+include DGO::Interval
 class TransitionScene
 
   def initialize prev_state, next_state, transitions = []

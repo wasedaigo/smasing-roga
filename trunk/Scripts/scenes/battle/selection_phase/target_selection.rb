@@ -1,4 +1,4 @@
-require "d_input"
+require "simple_input"
 require "scenes/battle/battle_lib"
 
 class TargetSelection
@@ -24,8 +24,8 @@ class TargetSelection
     [:down, :up].each do |key|
       tx = 0
       ty = 0
-      ty = 1 if DInput.pressed_newly?(:down)
-      ty = -1 if DInput.pressed_newly?(:up)
+      ty = 1 if SimpleInput.pressed_newly?(:down)
+      ty = -1 if SimpleInput.pressed_newly?(:up)
 
       if (ty != 0)
         # if (@selected_index_y + ty >= self.selected_row.length) and (@selected_index_x < @selected_list.length-1)
@@ -47,8 +47,8 @@ class TargetSelection
     [:right, :left].each do |key|
       tx = 0
       ty = 0
-      tx = 1 if DInput.pressed_newly?(:right)
-      tx = -1 if DInput.pressed_newly?(:left)
+      tx = 1 if SimpleInput.pressed_newly?(:right)
+      tx = -1 if SimpleInput.pressed_newly?(:left)
       if (tx != 0)
         return {:x => @selected_index_x + tx, :y => @selected_index_y + ty}
       end
@@ -141,14 +141,14 @@ class TargetSelection
         return
       end
 
-      if DInput.pressed_newly? :ok
+      if SimpleInput.pressed_newly? :ok
         $res.play_se("ok")
         self.choose_command
         self.reset
         return
       end
 
-      if DInput.pressed_newly? :cancel
+      if SimpleInput.pressed_newly? :cancel
         $res.play_se("cancel")
         self.close
         yield :cancel

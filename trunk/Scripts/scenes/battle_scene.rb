@@ -2,7 +2,7 @@ require  "scenes/battle/battle_phase/battle_phase"
 require  "scenes/battle/selection_phase/selection_phase"
 require  "scenes/battle/battle_setting"
 require  "scenes/transitionable"
-require  "d_input"
+require  "simple_input"
 
 class BattleScene
   include Transitionable

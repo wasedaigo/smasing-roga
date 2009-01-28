@@ -21,17 +21,17 @@ unit = Unit.new(100, 100)
 
 #Audio.play_bgm("Data/Audio/Music/battle2", :loop=>true)
 
-Game.run(SCREEN_WIDTH, SCREEN_HEIGHT, :window_scale => 2) do
-  Game.screen.clear
+Game.run(SCREEN_WIDTH, SCREEN_HEIGHT, :window_scale => 2) do |game|
+  game.screen.clear
 
   x, y = Input.mouse_location
 
   map.update
   unit.update
   
-  map.render(Game.screen)
-  unit.render(Game.screen, map.scroll_x, map.scroll_y)
-  $cursor.render(Game.screen)
+  map.render(game.screen)
+  unit.render(game.screen, map.scroll_x, map.scroll_y)
+  $cursor.render(game.screen)
   
-  Game.screen.render_text(Game.real_fps.to_s, 20, 20, DEFAULT_FONT, Color.new(255, 255, 255))
+  game.screen.render_text(game.real_fps.to_s, 20, 20, DEFAULT_FONT, Color.new(255, 255, 255))
 end
