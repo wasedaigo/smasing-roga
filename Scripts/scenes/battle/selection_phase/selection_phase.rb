@@ -1,9 +1,9 @@
-require  "d_input"
+require  "simple_input"
 require  "scenes/battle/selection_phase/command_selection"
-require "lib/interval/func"
-require "lib/interval/sequence"
-require "lib/interval/interval_runner"
-include Interval
+require "dgo/interval/func"
+require "dgo/interval/sequence"
+require "dgo/interval/interval_runner"
+include DGO::Interval
 
 class SelectionPhase
   attr_accessor :selectedIndex
@@ -173,7 +173,7 @@ class SelectionPhase
       if @command_menus.empty?
         self.turn_start
         
-        unless @base.turn_bar.moving?
+        unless @base.turn_bar.moving? 
           @selected_unit = self.first_item[:unit]
           @selected_unit.draw
           @base.turn_bar.update_turn_list(@selected_unit)

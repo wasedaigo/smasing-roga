@@ -34,6 +34,6 @@ class SkillLoader
     unless skill["options"].nil?
       options = skill["options"]
     end
-    Skill.new(id, skill["name"], target, skill["type"].intern, options)
+    Skill.new(id, skill["name"], target, skill["type"].intern, 0, options)
   end
 end

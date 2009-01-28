@@ -6,8 +6,9 @@ require  "scenes/battle/battle_camera"
 require  "scenes/battle/enemy"
 require  "scenes/battle/render_list"
 require  "scenes/battle/turn_bar"
-require  "lib/interval/interval_runner"
-include Interval
+require  "dgo/interval/interval_runner"
+require "dgo/interval/interval_lib"
+include DGO::Interval
 
 class BattleSetting
   attr_reader :battler_list, :enemy_list, :action_list, :battler_map, :blink_counter, :command_list, :waiting_list, :skill_list
@@ -32,7 +33,7 @@ class BattleSetting
     @zoom = 1
     @stop = false
     @blink_counter = 0
-    @blink_interval_runner = IntervalRunner.new(Interval.get_blink_interval(30, 0, 1, true){|value|@blink_counter = value})
+    @blink_interval_runner = IntervalRunner.new(DGO::Interval::get_blink_interval(30, 0, 1, true){|value|@blink_counter = value})
     @chainable = false
     @turn_bar = TurnBar.new(self, -25, 2, 7, 200)
     @battle_phase = BattlePhase.new(self)
@@ -88,18 +89,27 @@ class BattleSetting
     # @battler_list << Battler.new(self, "battlers/halyd",1, 2, :halyd, @battler_map)
     # @battler_list << Battler.new(self, "battlers/robton",2, 0, :robton, @battler_map)
     #@battler_list << Battler.new(self, "battlers/julian",0, 1, :julian, @battler_map)
-    data = {:id => "battlers/leoneed", :group => :battler, :name => "Leoneed", :grid_x => 1, :grid_y => 1, :skills => [["slash", 2],["upper_slash", 1]]}
+    data = {:id => "battlers/michael", :group => :battler, :name => "Michael", :grid_x => 1, :grid_y => 1, :skills => [["slash", 2],["upper_slash", 1]]}
     @battler_list << Battler.new(self, @battler_map, 0, data)
     
-    data = {:id => "battlers/julian", :group => :battler, :name => "Julian", :grid_x => 0, :grid_y => 1, :skills => [["slash", 2],["upper_slash", 1]]}
+    data = {:id => "battlers/halyd", :group => :battler, :name => "Halyd", :grid_x => 0, :grid_y => 1, :skills => [["cure", 2], ["slash", 2],["upper_slash", 1]]}
     @battler_list << Battler.new(self, @battler_map, 1, data)
+
+    data = {:id => "battlers/katalina", :group => :battler, :name => "Katalina", :grid_x => 2, :grid_y => 1, :skills => [["slash", 2],["upper_slash", 1]]}
+    @battler_list << Battler.new(self, @battler_map, 2, data)
+    
+    data = {:id => "battlers/fat_robin", :group => :battler, :name => "Fat Robin", :grid_x => 1, :grid_y => 2, :skills => [["slash", 2],["upper_slash", 1]]}
+    @battler_list << Battler.new(self, @battler_map, 3, data)
+    data = {:id => "battlers/fat_robin", :group => :battler, :name => "Fat Robin", :grid_x => 0, :grid_y => 2, :skills => [["slash", 2],["upper_slash", 1]]}
+    @battler_list << Battler.new(self, @battler_map, 4, data)
+    
     #@battler_list << Battler.new(self, "battlers/fat_robin",2, 2, :fat_robin, @battler_map)
     #@battler_list << Battler.new(self, "IgohlBattle","igohl_face",2, 2, :igohl, @battler_map)
   end
 
   def set_enemies
     #@enemy_list << enemy = Enemy.new(self, "bird", 10, 40, "bird", :beast, 0)
-    data = {:id => "enemies/bandit", :group => :enemy, :name => "Bandit", :x => 60, :y => 130, :enemy_type => :beast, :skills => [["fang", 2], ["smash", 2], ["inferno", 2], ["fire_breath", 2]]}
+    data = {:id => "enemies/bandit", :group => :enemy, :name => "Bandit", :x => 60, :y => 130, :enemy_type => :beast, :skills => [["cure", 2], ["fang", 2], ["smash", 2], ["inferno", 2], ["fire_breath", 2]]}
     @enemy_list <<  Enemy.new(self, 0, data)
   end
 

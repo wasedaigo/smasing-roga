@@ -2,12 +2,12 @@ require  "scenes/battle/skill_equipable"
 require  "scenes/battle/status_controlable"
 require  "scenes/battle/waitable"
 
-require  "lib/interval/sequence"
-require  "lib/interval/parallel"
-require  "lib/interval/lerp"
-require  "lib/interval/loop"
-require  "lib/interval/wait"
-include Interval
+require  "dgo/interval/sequence"
+require  "dgo/interval/parallel"
+require  "dgo/interval/lerp"
+require  "dgo/interval/loop"
+require  "dgo/interval/wait"
+include DGO::Interval
 
 class Unit
   include StatusControlable

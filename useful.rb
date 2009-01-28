@@ -4,6 +4,6 @@ Dir::glob("./Scripts/**/*.rb").each do |fn|
     str = f.read
   end
   File::open(fn, "w+") do |f|
-    f.write str.gsub('$root_path +', '')
+    f.write str.gsub('DInput', 'SimpleInput')
   end
 end

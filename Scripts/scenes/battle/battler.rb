@@ -3,12 +3,12 @@ require  "scenes/battle/movable"
 require  "scenes/battle/unit"
 require  "scenes/battle/skills/skill"
 
-require  "lib/interval/sequence"
-require  "lib/interval/parallel"
-require  "lib/interval/lerp"
-require  "lib/interval/loop"
-require  "lib/interval/wait"
-include Interval
+require  "dgo/interval/sequence"
+require  "dgo/interval/parallel"
+require  "dgo/interval/lerp"
+require  "dgo/interval/loop"
+require  "dgo/interval/wait"
+include DGO::Interval
 
 class Battler < Unit
   include Movable
@@ -30,9 +30,9 @@ class Battler < Unit
     
     self.update
     if no == 0
-    self.initialize_wait(10)
+      self.initialize_wait(10)
     else
-    self.initialize_wait(5)
+      self.initialize_wait(5)
     end
   end
 
@@ -136,9 +136,13 @@ class Battler < Unit
   end
   
   def get_before_action_interval(skill)
-    return Wait.new(10){@base.render_list.register(BattleLib.get_skill_window(skill.name, self), :top)}
+    return Wait.new(0)
   end
-
+  
+  def get_skill_window_interval(command)
+    Wait.new(20){@base.render_list.register(BattleLib.get_skill_window(command.name, self), :top)}
+  end
+  
   def get_posture_src
     return @animating_posture unless @animating_posture.nil?
 

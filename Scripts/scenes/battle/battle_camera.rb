@@ -1,9 +1,9 @@
-require "lib/target_object"
-require "lib/interval/sequence"
-require "lib/interval/parallel"
-require "lib/interval/sequence"
-require "lib/interval/lerp"
-include Interval
+require "dgo/target_object"
+require "dgo/interval/sequence"
+require "dgo/interval/parallel"
+require "dgo/interval/sequence"
+require "dgo/interval/lerp"
+include DGO::Interval
 
 class BattleCamera
   attr_reader :render_list

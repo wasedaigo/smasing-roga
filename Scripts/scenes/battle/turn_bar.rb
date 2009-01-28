@@ -1,10 +1,10 @@
 require  "scenes/battle/turn_box"
-require  "lib/interval/func"
-require  "lib/interval/lerp"
-require  "lib/interval/interval_runner"
-require  "lib/interval/parallel"
-require  "lib/interval/sequence"
-include Interval
+require  "dgo/interval/func"
+require  "dgo/interval/lerp"
+require  "dgo/interval/interval_runner"
+require  "dgo/interval/parallel"
+require  "dgo/interval/sequence"
+include DGO::Interval
 
 TIME = 5
 class TurnBar
@@ -108,6 +108,7 @@ class TurnBar
   end
   
   def next_turn(proc)
+    
     @current_item = @turn_list.first
     self.refresh_wait_time
     proc.call unless proc.nil?

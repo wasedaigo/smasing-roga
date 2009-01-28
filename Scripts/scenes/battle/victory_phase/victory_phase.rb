@@ -1,4 +1,4 @@
-require  "d_input"
+require  "simple_input"
 
 class VictoryPhase
   def initialize(base)

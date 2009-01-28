@@ -1,9 +1,9 @@
-require "lib/gadgets/battle_menu_window"
+require "scenes/battle/battle_menu_window"
 require "scenes/battle/command_window"
 require "scenes/battle/selection_phase/target_selection"
-require "d_input"
+require "simple_input"
 require "scenes/battle/movable"
-require "lib/interval/interval_runner"
+require "dgo/interval/interval_runner"
 
 class CommandSelection
   attr_reader :no
@@ -34,13 +34,22 @@ class CommandSelection
 
   def choose_command
     if @unit.class.include?(Movable)
-      if DInput.pressed?(:z)
+      if SimpleInput.pressed?(:z)
         @base.battler_map.reset_tiles
         list = @base.battler_map.get_tiles(@center_x, @center_y, :move, :size => @unit.movable_distance)
         list.each{|obj|obj.select_state = :selecting}
         [:up, :right, :down, :left].each do |value|
-          if DInput.pressed?(value)
-            @tasks << IntervalRunner.new(@unit.get_move_interval(16, value))
+          if SimpleInput.pressed?(value)
+            @tasks << IntervalRunner.new(
+            Sequence.new(
+              @unit.get_move_interval(16, value),
+              Func.new do
+                @window.update_content_texture
+                @window.update_texture
+              end
+            )
+            )
+            break
           end
         end
         return

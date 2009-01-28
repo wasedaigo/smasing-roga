@@ -1,12 +1,12 @@
 require  "scenes/battle/unit"
 require "scenes/battle/skills/skill"
 require "scenes/battle/battle_lib"
-require "lib/interval/sequence"
-require "lib/interval/wait"
-require "lib/interval/func"
-require "lib/interval/lerp"
-require "lib/interval/Parallel"
-include Interval
+require "dgo/interval/sequence"
+require "dgo/interval/wait"
+require "dgo/interval/func"
+require "dgo/interval/lerp"
+require "dgo/interval/Parallel"
+include DGO::Interval
 
 class Enemy < Unit
   def initialize(base, no, data)
@@ -18,6 +18,7 @@ class Enemy < Unit
         @icon_texture = $res.get_texture("beast_icon").dup
         @icon_texture.render_texture($res.get_texture("font"), 7, 8, :src_x => 9 * no, :src_width => 9, :src_height => 9)
     end
+    self.initialize_wait(5)
     self.update  
   end
 
@@ -66,10 +67,12 @@ class Enemy < Unit
   def get_before_action_interval(command)
     return Sequence.new(
       BattleLib.get_target_blink_interval(self, 4, Tone.get_tone(0, 0, 0, 255), Tone.get_tone(180, 180, 180, 255)),
-      BattleLib.get_target_blink_interval(self, 4, Tone.get_tone(0, 0, 0, 255), Tone.get_tone(180, 180, 180, 255)),
-      Wait.new(2),
-      Wait.new(20){@base.render_list.register(BattleLib.get_skill_window(command.name, self), :top)}
+      BattleLib.get_target_blink_interval(self, 4, Tone.get_tone(0, 0, 0, 255), Tone.get_tone(180, 180, 180, 255))
     )
+  end
+  
+  def get_skill_window_interval(command)
+    Wait.new(20){@base.render_list.register(BattleLib.get_skill_window(command.name, self), :top)}
   end
   
   def get_dead_interval(list)

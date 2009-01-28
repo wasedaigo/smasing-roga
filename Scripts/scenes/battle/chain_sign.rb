@@ -1,4 +1,4 @@
-require  "lib/graphics/sprite"
+require  "dgo/graphics/sprite"
 class ChainSign
   def initialize(base, x, y)
     @base = base

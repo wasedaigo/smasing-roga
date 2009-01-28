@@ -1,26 +1,39 @@
-require "lib/interval/sequence"
-require "lib/interval/parallel"
-require "lib/interval/func"
-require "lib/interval/wait"
-require "lib/interval/interval_lib"
-require "lib/interval/interval_runner"
+require "dgo/interval/sequence"
+require "dgo/interval/parallel"
+require "dgo/interval/func"
+require "dgo/interval/wait"
+require "dgo/interval/interval_lib"
+require "dgo/interval/interval_runner"
 
-include Interval
+include DGO::Interval
 
 class Skill
   attr_reader :name, :target, :group
 
-  def initialize(id, name, target, group, options = {})
+  def initialize(id, name, target, group, range, options = {})
     @id = id
     @name = name
     @target = target
     @group = group
+    @range = range # 0 - 2
     @effect_value = options[:effect_value]? options[:effect_value].to_i : 0
     @options = options
   end
 
-  def get_before_action_interval(user, targets)
-    return  user.get_before_action_interval(self)
+  def usable?(current_range) 
+    return current_range <= @range #If the character is with in skill range
+  end
+  
+  def get_before_action_interval(user, targets, select_targets)
+    arr1 = []
+    arr1 << user.get_before_action_interval(self)
+    
+    arr2 = []
+    arr2 << user.get_skill_window_interval(self)
+    arr2 << (self.get_target_view_interval(20, select_targets)) unless select_targets.empty?
+    
+    arr1 << Parallel.new(arr2)
+    return  Sequence.new(arr1)
   end
 
   def get_animation_interval(base, user, targets, value)
@@ -34,7 +47,7 @@ class Skill
     fx = user.x
     fy = user.y
     target = targets[0]
-
+  p @id
     str = $res.get_text_data("battle/skills/#{@id}")
     interval = eval(str)
 
@@ -44,7 +57,6 @@ class Skill
   def get_interval(base, user, targets, select_targets)
     arr = []
     arr << Func.new{user.posture_stack.clear}
-    arr << (self.get_target_view_interval(20, select_targets)) unless select_targets.empty?
     arr << (self.get_animation_interval(base, user, targets, @effect_value))
     if @effect_value < 0
       arr << (self.get_push_back_interval(5, targets, @options[:push_back]))
