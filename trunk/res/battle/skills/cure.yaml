@@ -1,0 +1,9 @@
+--- 
+name: Cure
+options: 
+  :effect_value: 10
+type: heal
+target: 
+  args: 
+  - 1
+  type: BattlerTarget
