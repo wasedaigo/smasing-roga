@@ -21,11 +21,12 @@
 			JUMPING:int = 1,
 			JUMP:int = 2,
 			LANDING:int = 3,
-			ATTAKING_AIR:int = 4;
+			ATTAKING_AIR:int = 4,
+			DASH:int = 5;
 			
 		private var sprite:Sprite,
 		frameX:int, frameY:int,
-		frameTime:int, frameTimer:int,
+		frameTimer:int,
 		speed:int,
 		gravity:int,
 		jumpBoost:Number, jumpPower:Number,
@@ -36,19 +37,35 @@
 		{
 			this.state = 0;
 			this.frameTimer = 0;
-			this.frameTime = 3;
 			this.frameX = 0;
 			this.frameY = 0;
 			this.gravity = 1;
-			this.jumpPower = 10;
+			this.jumpPower = 7;
 			this.jumpBoost = 0;
-			this.speed = 5;
+			this.speed = 2;
 			this.sprite = new Sprite(new Point(100, GROUND_LINE), new Rectangle(0, 0, 32, 32), Graphics.getBitmapData(Graphics.BattlerSample));
 		}
 		
 		public function update():void {
 			switch(this.state){
-				case(RUN):
+				
+			case(RUN):
+				var dash:Boolean = false;
+				var speedMultiplier:Number = 1;
+				var startFrame:int = 1;
+				var endFrame:int = 7;
+				var frameTime:int = 3; 
+				if (Input.isPressed(Key.SHIFT)) {
+					if (Input.isPressedNewly(Key.SHIFT)) {
+						this.frameX = 0;
+						this.frameTimer = 0;
+					}
+					speedMultiplier = 2;
+					startFrame = 12;
+					endFrame = 18;
+					frameTime = 2; 
+					dash = true;
+				}
 				
 				if (!Input.isPressed(Key.LEFT) && !Input.isPressed(Key.RIGHT)) {
 					this.frameTimer = 0;
@@ -57,27 +74,33 @@
 					
 					if (Input.isPressed(Key.LEFT)) {
 						this.frameY = 0;
-						this.sprite.pos.x -= this.speed;
+						this.sprite.pos.x -= this.speed * speedMultiplier;
 						this.frameTimer++;
-						if (this.frameTimer > this.frameTime) {
+						if (frameTimer > frameTime) {
 							this.frameTimer = 0;
 							this.frameX++;
+							if (this.frameX < startFrame) {
+								this.frameX = startFrame;
+							}
 						}
 					}
 					
 					if (Input.isPressed(Key.RIGHT)) {
 						this.frameY = 1;
-						this.sprite.pos.x += this.speed;
+						this.sprite.pos.x += this.speed * speedMultiplier;
 						this.frameTimer++;
-						if (this.frameTimer > this.frameTime) {
+						if (this.frameTimer > frameTime) {
 							this.frameTimer = 0;
 							this.frameX++;
+							if (this.frameX < startFrame) {
+								this.frameX = startFrame;
+							}
 						}
 					}
 				}
 				
-				if (this.frameX > 7) {
-					this.frameX = 1;
+				if (this.frameX > endFrame) {
+					this.frameX = startFrame;
 				}
 				
 				if (Input.isPressed(Key.UP)) {
@@ -86,7 +109,7 @@
 					this.state = JUMPING;
 				}
 				break;
-				case(JUMPING):
+			case(JUMPING):
 					this.frameTimer++;
 					if (this.frameTimer >= 2) {
 						this.frameX = 10;
@@ -96,7 +119,7 @@
 					}else {
 						this.frameX = 9;
 					}
-				break;
+			break;
 				case(JUMP):
 					if (Input.isPressed(Key.LEFT)) {
 						this.frameY = 0;
@@ -132,7 +155,7 @@
 						}
 					}
 				break;
-				case(LANDING):
+			case(LANDING):
 					this.frameTimer++;
 					if (this.frameTimer >= 2) {
 						this.frameX = 0;
@@ -142,16 +165,7 @@
 						this.frameX = 9;
 					}
 				break;
-				case(ATTAKING_AIR):
-					this.frameTimer++;
-					if (this.frameTimer >= 2) {
-						this.frameX = 0;
-						this.frameTimer = 0;
-						this.state = RUN;
-					}else {
-						this.frameX = 9;
-					}
-				break;
+
 			}
 			
 
