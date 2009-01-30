@@ -17,6 +17,7 @@
 		public function PlayState() 
 		{
 			this.player = new states.play.Player();
+			var map:Map = new Map(20, 20);
 		}
 		
 		public override function update():void
