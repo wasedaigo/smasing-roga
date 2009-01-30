@@ -43,7 +43,13 @@
 			this.jumpPower = 7;
 			this.jumpBoost = 0;
 			this.speed = 2;
-			this.sprite = new Sprite(new Point(100, GROUND_LINE), new Rectangle(0, 0, 32, 32), Graphics.getBitmapData(Graphics.BattlerSample));
+			this.sprite = new Sprite(
+				new Point(100, GROUND_LINE), 
+				new Rectangle(0, 0, 32, 32), 
+				Graphics.getBitmapData(Graphics.BattlerSample), 
+				1, 
+				-1
+			);
 		}
 		
 		public function update():void {
@@ -54,13 +60,13 @@
 				var speedMultiplier:Number = 1;
 				var startFrame:int = 1;
 				var endFrame:int = 7;
-				var frameTime:int = 3; 
+				var frameTime:Number = 3; 
 				if (Input.isPressed(Key.SHIFT)) {
 					if (Input.isPressedNewly(Key.SHIFT)) {
 						this.frameX = 0;
 						this.frameTimer = 0;
 					}
-					speedMultiplier = 2;
+					speedMultiplier = 3;
 					startFrame = 12;
 					endFrame = 18;
 					frameTime = 2; 
@@ -73,8 +79,8 @@
 				}else {
 					
 					if (Input.isPressed(Key.LEFT)) {
-						this.frameY = 0;
-						this.sprite.pos.x -= this.speed * speedMultiplier;
+						this.sprite.scaleX = 1;
+						this.sprite.position.x -= this.speed * speedMultiplier;
 						this.frameTimer++;
 						if (frameTimer > frameTime) {
 							this.frameTimer = 0;
@@ -86,8 +92,8 @@
 					}
 					
 					if (Input.isPressed(Key.RIGHT)) {
-						this.frameY = 1;
-						this.sprite.pos.x += this.speed * speedMultiplier;
+						this.sprite.scaleX = -1;
+						this.sprite.position.x += this.speed * speedMultiplier;
 						this.frameTimer++;
 						if (this.frameTimer > frameTime) {
 							this.frameTimer = 0;
@@ -122,13 +128,13 @@
 			break;
 				case(JUMP):
 					if (Input.isPressed(Key.LEFT)) {
-						this.frameY = 0;
-						this.sprite.pos.x -= this.speed;
+						this.sprite.scaleX = 1;
+						this.sprite.position.x -= this.speed;
 					}
 					
 					if (Input.isPressed(Key.RIGHT)) {
-						this.frameY = 1;
-						this.sprite.pos.x += this.speed;
+						this.sprite.scaleX = -1;
+						this.sprite.position.x += this.speed;
 					}
 					
 					this.frameTimer++;
@@ -145,10 +151,10 @@
 						}else {
 							this.frameX = 11;	
 						}
-						this.sprite.pos.y -= this.vy;
+						this.sprite.position.y -= this.vy;
 						this.vy -= this.gravity / this.jumpBoost;
-						if (this.sprite.pos.y > GROUND_LINE) {
-							this.sprite.pos.y = GROUND_LINE;
+						if (this.sprite.position.y > GROUND_LINE) {
+							this.sprite.position.y = GROUND_LINE;
 							this.state = LANDING;
 							this.frameX = 10;
 							this.frameTimer = 0;
