@@ -48,7 +48,7 @@
 				new Rectangle(0, 0, 32, 32), 
 				Graphics.getBitmapData(Graphics.BattlerSample), 
 				1, 
-				-1
+				1
 			);
 		}
 		
