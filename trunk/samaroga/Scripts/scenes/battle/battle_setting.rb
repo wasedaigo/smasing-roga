@@ -100,7 +100,7 @@ class BattleSetting
     
     data = {:id => "battlers/fat_robin", :group => :battler, :name => "Fat Robin", :grid_x => 1, :grid_y => 2, :skills => [["slash", 2],["upper_slash", 1]]}
     @battler_list << Battler.new(self, @battler_map, 3, data)
-    data = {:id => "battlers/fat_robin", :group => :battler, :name => "Fat Robin", :grid_x => 0, :grid_y => 2, :skills => [["slash", 2],["upper_slash", 1]]}
+    data = {:id => "battlers/monika", :group => :battler, :name => "Fat Robin", :grid_x => 0, :grid_y => 2, :skills => [["slash", 2],["upper_slash", 1]]}
     @battler_list << Battler.new(self, @battler_map, 4, data)
     
     #@battler_list << Battler.new(self, "battlers/fat_robin",2, 2, :fat_robin, @battler_map)
