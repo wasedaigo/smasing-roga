@@ -15,7 +15,7 @@ class Skill
     @name = name
     @target = target
     @group = group
-    @range = range # 0 - 2
+    @range = 2#range # 0 - 2
     @effect_value = options[:effect_value]? options[:effect_value].to_i : 0
     @options = options
   end

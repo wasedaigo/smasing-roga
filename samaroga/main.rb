@@ -39,5 +39,5 @@ Game.run(SCREEN_WIDTH, SCREEN_HEIGHT, :window_scale => 2, :title => "SmasingRoga
     game.fps = 30
   end
   
-  game.screen.render_text(game.real_fps.to_s, 20, 20, FONT, Color.new(255, 255, 255))
+  #game.screen.render_text(game.real_fps.to_s, 20, 20, FONT, Color.new(255, 255, 255))
 end

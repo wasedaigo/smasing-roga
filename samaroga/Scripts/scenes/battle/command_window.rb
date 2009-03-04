@@ -115,11 +115,11 @@ class CommandWindow
     
     if self.get_command_type(@index) != :unselectable
       if SimpleInput.pressed_newly?(:ok)
-        if self.selected_item.usable?(@unit.grid_x)
+        #if self.selected_item.usable?(@unit.grid_x)
           @close_interval = self.close_frame_interval
           $res.play_se("ok")
           yield :type => :ok, :value => @index
-        end
+        #end
         return
       end
     end
