@@ -1,0 +1,1 @@
+This is a project which aims to develop SNES-like RPG by using Star Ruby 2D Game Engine Library developed by Hajime Hoshi.
